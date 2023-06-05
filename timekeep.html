@@ -8,6 +8,7 @@
   <body id="body">
     <div id="text"></div>
     <button id="click">Button</button>
+    <input id="input">
     <script>
         function getFormatedTime(utc_code = Date.now()) {
             const now = new Date(utc_code);
@@ -59,8 +60,11 @@
             if (do_stop) {
                 document.getElementById('text').innerHTML += `<p>${getFormatedTime(last_time)} to ${getFormatedTime()}: ${afkTime(Date.now() - last_time)}, ${Date.now() - last_time}</p>`;
             } else {
+                last_time = parseInt(document.getElementById('input').value);
+                document.getElementById('text').innerHTML += `<p>${getFormatedTime(last_time)} to ${getFormatedTime()}: ${afkTime(Date.now() - last_time)}, ${Date.now() - last_time}</p>`;
                 last_time = Date.now();
-                document.getElementById('text').innerHTML += `OK, ${getFormatedTime(last_time)} - ${last_time}`;
+                document.getElementById('text').innerHTML += `<p>OK, ${getFormatedTime(last_time)} - ${last_time}</p>`;
+                document.getElementById('text').innerHTML += `<p>----------------------------------------------------</p>`;
             }
         });
     </script>
