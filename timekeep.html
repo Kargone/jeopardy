@@ -60,7 +60,7 @@
                 document.getElementById('text').innerHTML += `<p>${getFormatedTime(last_time)} to ${getFormatedTime()}: ${afkTime(Date.now() - last_time)}, ${Date.now() - last_time}</p>`;
             } else {
                 last_time = Date.now();
-                document.getElementById('text').innerHTML += 'OK';
+                document.getElementById('text').innerHTML += `OK, ${getFormatedTime(last_time)} - ${last_time}`;
             }
         });
     </script>
