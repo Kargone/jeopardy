@@ -84,12 +84,20 @@
     animation: hideOptionsContainer 1s forwards;
 }
 
+.options-container > hr {
+    margin-left: 25px;
+}
+
 .invisible-input:checked + div > .options-container {
     animation: showOptionsContainer 1s forwards;
 }
 
-#create-board-container > div:hover > .options-container {
+#create-board-container > div > .option-title:hover + .options-container {
     animation: showOptionsContainer 1s forwards;
+}
+
+#create-board-container > div > .options-container:hover {
+    animation: showOptionsContainer2 1s forwards;
 }
 
 .invisible-input:checked + div > .option-title > p {
@@ -128,6 +136,17 @@
     0%{
         max-height: 0px;
         opacity: 0;
+    }
+    100%{
+        max-height: 200px;
+        opacity: 1;
+    }
+}
+
+@keyframes showOptionsContainer2 {
+    0%{
+        max-height: attr(height);
+        opacity: attr(opacity);
     }
     100%{
         max-height: 200px;
