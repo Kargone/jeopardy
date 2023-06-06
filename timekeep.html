@@ -63,7 +63,8 @@
                 last_time = parseInt(document.getElementById('input').value);
                 document.getElementById('text').innerHTML += `<p>${getFormatedTime(last_time)} to ${getFormatedTime()}: ${afkTime(Date.now() - last_time)}, ${Date.now() - last_time}</p>`;
                 last_time = Date.now();
-                document.getElementById('text').innerHTML += `<p>OK, ${getFormatedTime(last_time)} - ${last_time}</p>`;
+                document.getElementById('text').innerHTML += `<p>${getFormatedTime(last_time)} - ${last_time}</p>`;
+                navigator.clipboard.writeText(`${getFormatedTime(last_time)} - ${last_time}`);
                 document.getElementById('text').innerHTML += `<p>----------------------------------------------------</p>`;
             }
         });

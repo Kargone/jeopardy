@@ -237,16 +237,39 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
-h1 {
-    font-size: 70px;
-}
-
 .small-input {
     width: 25px;
 }
 
 .large-input {
     width: 55px;
+}
+
+table, td, th {
+    border: 5px solid black;
+    border-collapse: collapse;
+}
+
+table {
+    width: 98vw;
+    margin-left: 1vw;
+    height: calc(99vh - 180px);
+}
+
+th {
+    font-size: auto;
+    color: white;
+    padding: 10px;
+}
+
+tr {
+    font-size: 60px;
+    color: #f8ff00;
+    padding: 10px;
+}
+
+h1 {
+    font-size: 70px;
 }
 
 button {

@@ -96,15 +96,15 @@ class Board {
         this.topicNames = [];
         for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++)
             this.topicNames.push(`Topic ${topic_number}`);
-        this.questionInfo = {};
-        this.loadQuestionInfoFromSettings();
+        this.questionInfos = {};
+        this.loadQuestionInfosFromSettings();
     }
-    loadQuestionInfoFromSettings() {
+    loadQuestionInfosFromSettings() {
         for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
             for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
                 const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
                 const question_value = this.m * question_in_topic_number + this.b;
-                this.questionInfo[`question-${question_number}`] = new Question({
+                this.questionInfos[`question-${question_number}`] = new Question({
                     'board_type': this.type,
                     'question_value': question_value,
                     'background_color': this.backgroundColor,
@@ -122,6 +122,7 @@ class Board {
     }
     loadFromExport(board_export) {
         this.type = board_export['type'];
+        this.title = board_export['title'];
         this.titleColor = board_export['title-color'];
         this.topicColor = board_export['topic-color'];
         this.backgroundColor = board_export['background-color'];
@@ -137,32 +138,69 @@ class Board {
         this.topicAmount = board_export['topic-amount'];
         this.questionAmount = board_export['question-amount'];
         this.topicNames = board_export['topic-names'];
-        this.questionInfo = board_export['question-info'];
-        this.loadQuestionInfoFromExport();
+        this.questionInfos = board_export['question-infos'];
+        this.loadQuestionInfosFromExport();
     }
-    loadQuestionInfoFromExport() {
+    loadQuestionInfosFromExport() {
         let new_question_info = {};
         for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
             for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
                 const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
-                new_question_info[`question-${question_number}`] = new Question(this.questionInfo[`question-${question_number}`], false);
+                new_question_info[`question-${question_number}`] = new Question(this.questionInfos[`question-${question_number}`], false);
             }
         }
-        this.questionInfo = new_question_info;
+        this.questionInfos = new_question_info;
     }
     loadForEditing() {
-
+        let board_container = document.createElement("div");
+        board_container.id = `${this.type}-baord-container`;
+        if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
+            board_container.innerHTML = `
+                <h1>${this.title}</h1>
+            `;
+            // title
+            // table
+            let table = '<table>';
+            let table_headings = '<tr>';
+            for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                table_headings += `<th id="${this.type}-topic-${topic_number}">${this.topicNames[topic_number - 1]}</th>`;
+            }
+            table_headings += '</tr>';
+            table += table_headings;
+            for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
+                let table_row = '<tr>';
+                for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                    const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
+                    const question_info = this.questionInfos[`question-${question_number}`];
+                    table_row += `<td id="${this.type}-board-question-${question_number}">$${question_info.questionValue}</td>`;
+                }
+                table_row += '</tr>';
+                table += table_row;
+            }
+            table += '</table>'
+            console.log(table)
+            board_container.innerHTML += table;
+            console.log(board_container.innerHTML)
+            // edit text
+            // next board
+            document.getElementById('boards-container').appendChild(board_container);
+            let question_container = document.createElement("div");
+            question_container.id = `${this.type}-questions-container`;
+            // document.getElementById('boards-container').appendChild(question_container);
+        } else {
+            document.getElementById('boards-container').appendChild(board_container);
+        }
     }
     loadForGame(gameSettings) {
 
     }
     exportQuestionInfos() {
-        let exported_question_info = {};
-        for (const question_key of Object.keys(this.questionInfo)) {
-            const question = this.questionInfo[question_key];
-            exported_question_info[question_key] = question.export();
+        let exported_question_infos = {};
+        for (const question_key of Object.keys(this.questionInfos)) {
+            const question = this.questionInfos[question_key];
+            exported_question_infos[question_key] = question.export();
         }
-        return exported_question_info;
+        return exported_question_infos;
     }
     export() {
         return {
@@ -183,7 +221,7 @@ class Board {
             'topic-amount': this.topicAmount,
             'question-amount': this.questionAmount,
             'topic-names': this.topicNames,
-            'question-info': this.exportQuestionInfos()
+            'question-infos': this.exportQuestionInfos()
         };
     }
 }
@@ -331,13 +369,22 @@ function createBoardListners() {
             }
         });
         const game_boards = user_data.game_boards; 
-        showBoard(game_boards[game_boards.length - 1]);
+        CreateBoardHTML(game_boards[game_boards.length - 1]);
     });
 }
 
-function showBoard(game_board) {
+function CreateBoardHTML(game_board) {
     hideScreens('boards-container');
-    document.getElementById('boards-container')
+    let normal_board = game_board.boards['1-normal-jeopardy-baord'] != false ? new Board(game_board.boards['1-normal-jeopardy-baord'], false) : false; 
+    let double_board = game_board.boards['2-double-jeopardy-baord'] != false ? new Board(game_board.boards['2-double-jeopardy-baord'], false) : false;
+    let final_board = game_board.boards['3-final-jeopardy-board'] != false ? new Board(game_board.boards['3-final-jeopardy-board'], false) : false;
+    if (typeof normal_board != 'boolean') normal_board.loadForEditing();
+    // if (typeof double_board != 'boolean') double_board.loadForEditing();
+    // if (typeof final_board != 'boolean') final_board.loadForEditing();
+}
+
+function showBoard(type) {
+
 }
 
 document.getElementById("create-board").addEventListener('click', function() {
