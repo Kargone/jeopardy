@@ -9,11 +9,11 @@
   <body id="body">
     <div id="home-container">
         <h1>Jeopardy</h1>
-        <button>Create a Game</button>
-        <button>Load a Game</button>
-        <button>Create a Board</button>
-        <button>Settings</button>
-        <button>Log Out</button>
+        <button id="create-game">Create a Game</button>
+        <button id="load-game">Load a Game</button>
+        <button id="create-board">Create a Board</button>
+        <button id="open-settings">Settings</button>
+        <button id="log-out">Log Out</button>
     </div>
     <div id="create-board-container">
         <h1>Jeopardy</h1>
@@ -22,16 +22,20 @@
         <div>
             <div class="option-title">
                 <p>▶</p>
-                <label for="board-size">Size</h2>
+                <label for="board-size">Size/Name</h2>
             </div>
             <div class="options-container">
                 <div class="option">
+                    <label>Name:</label>
+                    <input id="board-name-input" value="Name here..." type="text"/>
+                </div>
+                <div class="option">
                     <label>Topic amount:</label>
-                    <input id="board-topic-amount-input" class="small-input" placeholder="5" type="number"/>
+                    <input id="board-topic-amount-input" class="small-input" value="5" type="number"/>
                 </div>
                 <div class="option">
                     <label>Questions in each topic:</label>
-                    <input id="board-question-amount-input" class="small-input" placeholder="5" type="number"/>
+                    <input id="board-question-amount-input" class="small-input" value="5" type="number"/>
                 </div>
             </div>
         </div>
@@ -76,23 +80,23 @@
             <div class="options-container">
                 <div class="option">
                     <label>Title:</label>
-                    <input id="board-title-color-input" class="large-input" placeholder="#f8ff00" type="text"/>
+                    <input id="board-title-color-input" class="large-input" value="#f8ff00" type="text"/>
                 </div>
                 <div class="option">
                     <label>Topics:</label>
-                    <input id="board-topic-color-input" class="large-input" placeholder="#f8ff00" type="text"/>
+                    <input id="board-topic-color-input" class="large-input" value="#f8ff00" type="text"/>
                 </div>
                 <div class="option">
                     <label>Background:</label>
-                    <input id="board-background-color-input" class="large-input" placeholder="#073763" type="text"/>
+                    <input id="board-background-color-input" class="large-input" value="#073763" type="text"/>
                 </div>
                 <div class="option">
                     <label>Answer:</label>
-                    <input id="board-answer-color-input" class="large-input" placeholder="#ffffff" type="text"/>
+                    <input id="board-answer-color-input" class="large-input" value="#ffffff" type="text"/>
                 </div>
                 <div class="option">
                     <label>Questions:</label>
-                    <input id="board-question-color-input" class="large-input" placeholder="#ffffff" type="text"/>
+                    <input id="board-question-color-input" class="large-input" value="#ffffff" type="text"/>
                 </div>
             </div>
         </div>
@@ -113,11 +117,11 @@
                 </div>
                 <div class="option">
                     <label>Key Pressed to reveal answer</label>
-                    <input id="board-key-reveal-answer-input" class="small-input" placeholder="" type="text"/>
+                    <input id="board-key-reveal-answer-input" class="small-input" value="" type="text"/>
                 </div>
                 <div class="option">
                     <label>Key Pressed to go home</label>
-                    <input id="board-key-go-home-input" class="small-input" placeholder="" type="text"/>
+                    <input id="board-key-go-home-input" class="small-input" value="" type="text"/>
                 </div>
             </div>
         </div>
@@ -155,26 +159,26 @@
             <div class="options-container">
                 <div class="option">
                     <label>Normal Jeopardy:</label>
-                    <input id="board-normal-jeopardy-m-input" class="large-input" placeholder="100" type="number"/>
+                    <input id="board-normal-jeopardy-m-input" class="large-input" value="100" type="number"/>
                     <label>x topic number +</label>
-                    <input id="board-normal-jeopardy-b-input" class="large-input" placeholder="0" type="number"/>
+                    <input id="board-normal-jeopardy-b-input" class="large-input" value="0" type="number"/>
                 </div>
                 <div class="option">
                     <label>Double Jeopardy:</label>
-                    <input id="board-double-jeopardy-m-input" class="large-input" placeholder="100" type="number"/>
+                    <input id="board-double-jeopardy-m-input" class="large-input" value="100" type="number"/>
                     <label>x topic number +</label>
-                    <input id="board-double-jeopardy-b-input" class="large-input" placeholder="0" type="number"/>
+                    <input id="board-double-jeopardy-b-input" class="large-input" value="0" type="number"/>
                 </div>
                 <div class="option">
                     <label>Final Jeopardy:</label>
-                    <input id="board-final-jeopardy-m-input" class="large-input" placeholder="100" type="number"/>
+                    <input id="board-final-jeopardy-m-input" class="large-input" value="100" type="number"/>
                     <label>x topic number +</label>
-                    <input id="board-final-jeopardy-b-input" class="large-input" placeholder="0" type="number"/>
+                    <input id="board-final-jeopardy-b-input" class="large-input" value="0" type="number"/>
                 </div>
             </div>
         </div>
         <hr>
-        <div id="create-board">
+        <div id="finalize-board">
             <button>Create Board</button>
         </div>
     </div>
