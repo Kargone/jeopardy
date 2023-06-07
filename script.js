@@ -113,6 +113,7 @@ class Board {
                 this.questionInfos[`question-${question_number}`] = new Question({
                     'board_type': this.type,
                     'question_value': question_value,
+                    'question_number': question_number,
                     'background_color': this.backgroundColor,
                     'answer_color': this.answerColor,
                     'question_color': this.questionColor,
@@ -142,8 +143,8 @@ class Board {
         this.keyGoHome = board_export['key-go-home'];
         this.oldQuestionsClicked = board_export['old-questions-clicked'];
         this.teamOrder = board_export['team-order'];
-        this.m = board_export['baord-m'];
-        this.b = board_export['baord-b'];
+        this.m = board_export['board-m'];
+        this.b = board_export['board-b'];
         this.topicAmount = board_export['topic-amount'];
         this.questionAmount = board_export['question-amount'];
         this.topicNames = board_export['topic-names'];
@@ -165,12 +166,24 @@ class Board {
     }
     loadForEditing() {
         let board_container = document.createElement("div");
-        board_container.id = `${this.type}-baord-container`;
+        board_container.id = `${this.type}-board-container`;
         if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
+            // title
+            // edit text
+            // next board
             board_container.innerHTML = `
                 <h1>${this.title}</h1>
+                <div class="edit-text">
+                    <label for="${this.type}-edit-text">Edit Text:</label>
+                    <label class="switch">
+                        <input type="checkbox" id="${this.type}-edit-text">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="next-board">
+                    <button id=""${this.type}-next-board">Next Board</button>
+                </div>
             `;
-            // title
             // table
             let table = '<table>';
             let table_headings = '<tr>';
@@ -190,23 +203,80 @@ class Board {
                 table += table_row;
             }
             table += '</table>'
-            console.log(table)
             board_container.innerHTML += table;
-            console.log(board_container.innerHTML)
-            // edit text
-            // next board
             document.querySelector(':root').style.setProperty('--table-heading-font-size', `${(window.innerHeight * .99 - 180) / 81}vh`);
             document.querySelector(':root').style.setProperty('--table-element-font-size', `${(window.innerHeight * .99 - 180) / 101}vh`);
+            // board_container.style.display = 'none';
             document.getElementById('boards-container').appendChild(board_container);
             let question_container = document.createElement("div");
             question_container.id = `${this.type}-questions-container`;
-            // document.getElementById('boards-container').appendChild(question_container);
+            for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
+                    const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
+                    const question_info = this.questionInfos[`question-${question_number}`];
+                    question_container.innerHTML += question_info.loadForEditing();
+                }
+            }
+            document.getElementById('boards-container').appendChild(question_container);
         } else {
             document.getElementById('boards-container').appendChild(board_container);
+        }
+        this.attachListnersForEditing();
+    }
+    attachListnersForEditing() {
+        this.editingText = false;
+        const this_board = this;
+        if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
+            document.getElementById(`${this.type}-edit-text`).addEventListener('click', function() {
+                if (this_board.editingText) {
+                    for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
+                        document.getElementById(`${this_board.type}-topic-${topic_number}`).innerHTML = `
+                            ${this_board.topicNames[topic_number - 1]}
+                        `;
+                    }
+                    for (let question_in_topic_number = 1; question_in_topic_number <= this_board.questionAmount; question_in_topic_number++) {
+                        for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
+                            const question_number = (topic_number - 1) * this_board.questionAmount + question_in_topic_number;
+                            const question_info = this_board.questionInfos[`question-${question_number}`];
+                            document.getElementById(`${this_board.type}-board-question-${question_number}`).innerHTML = `
+                                $${question_info.questionValue}
+                            `;
+                        }
+                    }
+                    return this_board.editingText = false;
+                }
+                this_board.editingText = true;
+                for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
+                    document.getElementById(`${this_board.type}-topic-${topic_number}`).innerHTML = `
+                        <input id="${this_board.type}-topic-${topic_number}-input" class="topic-heading-input" value="${this_board.topicNames[topic_number - 1]}" type="text"/>
+                    `;
+                }
+                for (let question_in_topic_number = 1; question_in_topic_number <= this_board.questionAmount; question_in_topic_number++) {
+                    for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
+                        const question_number = (topic_number - 1) * this_board.questionAmount + question_in_topic_number;
+                        const question_info = this_board.questionInfos[`question-${question_number}`];
+                        document.getElementById(`${this_board.type}-board-question-${question_number}`).innerHTML = `
+                            <input id="${this_board.type}-board-question-${question_number}-input" class="table-element-input" value="${question_info.questionValue}" type="number"/>
+                        `;
+                    }
+                }
+            });
+            for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
+                    const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
+                    const question_info = this.questionInfos[`question-${question_number}`];
+                    question_info.attachListnersForEditing();
+                }
+            }
+        } else {
+            
         }
     }
     loadForGame(gameSettings) {
 
+    }
+    attachListnersForGame() {
+        
     }
     exportQuestionInfos() {
         let exported_question_infos = {};
@@ -221,8 +291,8 @@ class Board {
             'title': this.title,
             'type': this.type,
             'title-color': this.titleColor,
-            'topicColor': this.topicColor,
-            'backgroundColor': this.backgroundColor,
+            'topic-color': this.topicColor,
+            'background-color': this.backgroundColor,
             'answer-color': this.answerColor,
             'question-color': this.questionColor,
             'images-allowed': this.imagesAllowed,
@@ -230,8 +300,8 @@ class Board {
             'key-go-home': this.keyGoHome,
             'old-questions-clicked': this.oldQuestionsClicked,
             'team-order': this.teamOrder,
-            'baord-m': this.m,
-            'baord-b': this.b,
+            'board-m': this.m,
+            'board-b': this.b,
             'topic-amount': this.topicAmount,
             'question-amount': this.questionAmount,
             'topic-names': this.topicNames,
@@ -254,6 +324,7 @@ class Question {
     loadFromSettings(object) {
         this.boardType = object.board_type;
         this.questionValue = object.question_value;
+        this.questionNumber = object.question_number;
         this.backgroundColor = object.background_color;
         this.answerColor = object.answer_color;
         this.questionColor = object.question_color;
@@ -275,6 +346,7 @@ class Question {
     loadFromExport(question_export) {
         this.boardType = question_export['board-type'];
         this.questionValue = question_export['question-value'];
+        this.questionNumber = question_export['question-number'];
         this.backgroundColor = question_export['background-color'];
         this.answerColor = question_export['answer-color'];
         this.questionColor = question_export['question-color'];
@@ -294,15 +366,191 @@ class Question {
         this.dailyDouble = question_export['daily-double'];
     }
     loadForEditing() {
+        return `
+            <div id="${this.boardType}-question-${this.questionNumber}-container" class="question-container">
+                <div id="${this.boardType}-normal-question-${this.questionNumber}-edit-container" class="normal-question-edit-container">
+                    <h1 id="${this.boardType}-normal-question-${this.questionNumber}-title">${this.title}</h1>
+                    <div class="preveiw-button-container">
+                        <button id="${this.boardType}-preveiw-normal-question-${this.questionNumber}-button">Preveiw</button>
+                    </div>
+                    <div class="timers-container">
+                        <div class="timer-delay-container">
+                            <label>Timer delay:</label>
+                            <input id="${this.boardType}-normal-timer-delay-${this.questionNumber}-input" class="large-input" type="number" value="${this.timerDelay}"/>
+                        </div>
+                        <div class="timer-length-container">
+                            <label>Timer:</label>
+                            <input id="${this.boardType}-normal-timer-${this.questionNumber}-input" type="number" value="${this.timerLengthNormal}"/>
+                        </div>
+                    </div>
+                    <div class="question-input-container">
+                        <label>Q:</label>
+                        <input id="${this.boardType}-normal-question-${this.questionNumber}-input" type="text" value="${this.question}"/>
+                    </div>
+                    <div class="answer-input-container">
+                        <label>A:</label>
+                        <input id="${this.boardType}-normal-answer-${this.questionNumber}-input" type="text" value="${this.answer}"/>
+                    </div>
+                    <div class="image-input-container">
+                        <div>
+                            <label>Image URL:</label>
+                            <input id="${this.boardType}-normal-image-${this.questionNumber}-input" type="text" value="${this.imageURL}"/>
+                        </div>
+                        <div>
+                            <img id="${this.boardType}-normal-image-${this.questionNumber}-preview" src="${this.imageURL}" alt="Image preveiw"/>
+                        </div>
+                    </div>
+                    <div class="make-daily-double-button-container">
+                        <button id="${this.boardType}-make-daily-double-${this.questionNumber}-button">Make Daily Double</button>
+                    </div>
+                    <div class="home-button-container">
+                        <button id="${this.boardType}-home-normal-${this.questionNumber}-button">Home</button>
+                    </div>
+                </div>
+                <div id="${this.boardType}-daily-double-question-${this.questionNumber}-edit-container" class="daily-double-question-edit-container">
+                    <h1 id="${this.boardType}-daily-double-question-${this.questionNumber}-title">${this.title}</h1>
+                    <div class="preveiw-button-container">
+                        <button id="${this.boardType}-preveiw-question-daily-double-${this.questionNumber}-button">Preveiw</button>
+                    </div>
+                    <div class="timers-container">
+                        <div class="timer-delay-container">
+                            <label>Timer delay:</label>
+                            <input id="${this.boardType}-daily-double-timer-delay-${this.questionNumber}-input" class="large-input" type="number" value="${this.timerDelay}"/>
+                        </div>
+                        <div class="timer-length-container">
+                            <label>Timer:</label>
+                            <input id="${this.boardType}-daily-double-timer-${this.questionNumber}-input" type="number" value="${this.timerLengthDailyDouble}"/>
+                        </div>
+                    </div>
+                    <div>
+                        <h2>Daily Double!</h2>
+                    </div>
+                    <div class="question-input-container">
+                        <label>Q:</label>
+                        <input id="${this.boardType}-daily-double-question-${this.questionNumber}-input" type="text" value="${this.question}"/>
+                    </div>
+                    <div class="answer-input-container">
+                        <label>A:</label>
+                        <input id="${this.boardType}-daily-double-answer-${this.questionNumber}-input" type="text" value="${this.answer}"/>
+                    </div>
+                    <div class="image-input-container">
+                        <div>
+                            <label>Image URL:</label>
+                            <input id="${this.boardType}-daily-double-image-${this.questionNumber}-input" type="text" value="${this.imageURL}"/>
+                        </div>
+                        <div>
+                            <img id="${this.boardType}-daily-double-image-${this.questionNumber}-preview" src="${this.imageURL}" alt="Image preveiw"/>
+                        </div>
+                    </div>
+                    <div class="unmake-daily-double-button-container">
+                        <button id="${this.boardType}-unmake-daily-double-${this.questionNumber}-button">Unmake Daily Double</button>
+                    </div>
+                    <div class="home-button-container">
+                        <button id="${this.boardType}-home-daily-double-${this.questionNumber}-button">Home</button>
+                    </div>
+                </div>
+                <div id="${this.boardType}-normal-question-${this.questionNumber}-preview-container" class="normal-question-preview-container">
+                </div>
+                <div id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-container" class="daily-double-question-preview-container">
+                </div>
+            </div>
+        `;
+    }
+    attachListnersForEditing() {
+        const this_question = this;
+        document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).addEventListener('click', function() {
+            document.getElementById(`${this_question.boardType}-board-container`).style.display = 'none';
+            document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'block';
+            if (this_question.dailyDouble) {
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+            } else {
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+            }
+            updateQuestion();
+        });
+        document.getElementById(`${this.boardType}-home-normal-${this.questionNumber}-button`).addEventListener('click', function() {
+            document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+            document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+        });
+        document.getElementById(`${this.boardType}-home-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
+            document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+            document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+        });
+        document.getElementById(`${this.boardType}-normal-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.timerDelay = this.value;
+        });
+        document.getElementById(`${this.boardType}-daily-double-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.timerDelay = this.value;
+        });
+        document.getElementById(`${this.boardType}-normal-timer-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.timerLengthNormal = this.value;
+        });
+        document.getElementById(`${this.boardType}-daily-double-timer-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.timerLengthDailyDouble = this.value;
+        });
+        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.question = this.value;
+        });
+        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.question = this.value;
+        });
+        document.getElementById(`${this.boardType}-normal-answer-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.answer = this.value;
+        });
+        document.getElementById(`${this.boardType}-daily-double-answer-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.answer = this.value;
+        });
+        document.getElementById(`${this.boardType}-normal-image-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.imageURL = this.value;
+            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+        });
+        document.getElementById(`${this.boardType}-daily-double-image-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.imageURL = this.value;
+            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+        });
+        document.getElementById(`${this.boardType}-make-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
+            this_question.dailyDouble = true;
+            updateQuestion();
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+        });
+        document.getElementById(`${this.boardType}-unmake-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
+            this_question.dailyDouble = false;
+            updateQuestion();
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+        });
+        function updateQuestion() {
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-title`).textContent = this_question.title;
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-title`).textContent = this_question.title;
+            document.getElementById(`${this_question.boardType}-normal-timer-delay-${this_question.questionNumber}-input`).value = this_question.timerDelay;
+            document.getElementById(`${this_question.boardType}-daily-double-timer-delay-${this_question.questionNumber}-input`).value = this_question.timerDelay;
+            document.getElementById(`${this_question.boardType}-normal-timer-${this_question.questionNumber}-input`).value = this_question.timerLengthNormal;
+            document.getElementById(`${this_question.boardType}-daily-double-timer-${this_question.questionNumber}-input`).value = this_question.timerLengthDailyDouble;
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-input`).value = this_question.question;
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-input`).value = this_question.question;
+            document.getElementById(`${this_question.boardType}-normal-answer-${this_question.questionNumber}-input`).value = this_question.answer;
+            document.getElementById(`${this_question.boardType}-daily-double-answer-${this_question.questionNumber}-input`).value = this_question.answer;
+            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-input`).value = this_question.imageURL;
+            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-input`).value = this_question.imageURL;
+            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+        }
 
     }
     loadForGame() {
         
     }
+    attachListnersForGame() {
+
+    }
     export() {
         return {
             'board-type': this.boardType,
             'question-value': this.questionValue,
+            'question-number': this.questionNumber,
             'background-color': this.backgroundColor,
             'answer-color': this.answerColor,
             'question-color': this.questionColor,
@@ -370,8 +618,8 @@ function createBoardListners() {
             'settings': new_board_settings,
             'file-path': 'main/',
             'boards': {
-                '1-normal-jeopardy-baord': settings['normal-jeopardy'] ? new Board(settings, true, 'normal-jeopardy').export() : false,
-                '2-double-jeopardy-baord': settings['double-jeopardy'] ? new Board(settings, true, 'double-jeopardy').export() : false,
+                '1-normal-jeopardy-board': settings['normal-jeopardy'] ? new Board(settings, true, 'normal-jeopardy').export() : false,
+                '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, 'double-jeopardy').export() : false,
                 '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, 'final-jeopardy').export() : false
             }
         });
@@ -383,8 +631,8 @@ function createBoardListners() {
 
 function CreateBoardHTML(game_board) {
     hideScreens('boards-container');
-    let normal_board = game_board.boards['1-normal-jeopardy-baord'] != false ? new Board(game_board.boards['1-normal-jeopardy-baord'], false) : false; 
-    let double_board = game_board.boards['2-double-jeopardy-baord'] != false ? new Board(game_board.boards['2-double-jeopardy-baord'], false) : false;
+    let normal_board = game_board.boards['1-normal-jeopardy-board'] != false ? new Board(game_board.boards['1-normal-jeopardy-board'], false) : false; 
+    let double_board = game_board.boards['2-double-jeopardy-board'] != false ? new Board(game_board.boards['2-double-jeopardy-board'], false) : false;
     let final_board = game_board.boards['3-final-jeopardy-board'] != false ? new Board(game_board.boards['3-final-jeopardy-board'], false) : false;
     if (typeof normal_board != 'boolean') normal_board.loadForEditing();
     // if (typeof double_board != 'boolean') double_board.loadForEditing();

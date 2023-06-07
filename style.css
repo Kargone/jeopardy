@@ -239,6 +239,158 @@ input:checked + .slider:before {
     width: 55px;
 }
 
+.edit-text {
+    position: absolute;
+    top: 72px;
+    left: 1vw;
+    font-size: 30px;
+}
+
+.edit-text > .switch > .slider {
+    height: 28px;
+    width: 43px;
+}
+
+.edit-text > .switch > .slider.round:before {
+    height: 28px;
+    width: 28px;
+}
+
+.topic-heading-input {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    font-size: var(--table-heading-font-size);
+}
+
+.table-element-input {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    font-size: var(--table-element-font-size);
+}
+
+.next-board {
+    position: absolute;
+    top: 62px;
+    right: 1vw;
+}
+
+.next-board > button {
+    width: 200px;
+    height: 60px;
+    font-size: 30px;
+}
+
+.question-container {
+    display: none;
+}
+
+.question-container > .normal-question-edit-container,
+.question-container > .daily-double-question-edit-container  {
+    display: none;
+}
+
+.question-container > .normal-question-edit-container > .preveiw-button-container,
+.question-container > .daily-double-question-edit-container > .preveiw-button-container {
+    position: absolute;
+    top: 62px;
+    right: 1vw;
+}
+
+.question-container > .normal-question-edit-container > .preveiw-button-container > button,
+.question-container > .daily-double-question-edit-container > .preveiw-button-container > button {
+    width: 200px;
+    height: 60px;
+    font-size: 30px;
+}
+
+.question-container > .normal-question-edit-container > .timers-container,
+.question-container > .daily-double-question-edit-container > .timers-container {
+    position: absolute;
+    left: 1vw;
+    top: 68px;
+}
+
+.question-container > .normal-question-edit-container > .question-input-container,
+.question-container > .normal-question-edit-container > .answer-input-container,
+.question-container > .daily-double-question-edit-container > .answer-input-container  {
+    margin-top: 19vh;
+}
+
+.question-container > .daily-double-question-edit-container > .question-input-container {
+    margin-top: 6vh;
+}
+
+.question-container > .daily-double-question-edit-container > div > h2 {
+    font-size: 60px;
+}
+
+.question-container > .normal-question-edit-container > .question-input-container > label,
+.question-container > .normal-question-edit-container > .answer-input-container > label,
+.question-container > .daily-double-question-edit-container > .question-input-container > label,
+.question-container > .daily-double-question-edit-container > .answer-input-container > label  {
+    font-size: 60px;
+}
+
+.question-container > .normal-question-edit-container > .question-input-container > input,
+.question-container > .normal-question-edit-container > .answer-input-container > input,
+.question-container > .daily-double-question-edit-container > .question-input-container > input,
+.question-container > .daily-double-question-edit-container > .answer-input-container > input  {
+    height: 60px;
+    width: 85vw;
+    font-size: 60px;
+}
+
+.question-container > .normal-question-edit-container > .image-input-container,
+.question-container > .daily-double-question-edit-container > .image-input-container  {
+    margin-top: 5vh;      
+}
+
+.question-container > .normal-question-edit-container > .image-input-container > div > label,
+.question-container > .daily-double-question-edit-container > .image-input-container > div > label {
+    font-size: 30px;
+}
+
+.question-container > .normal-question-edit-container > .image-input-container > div > input,
+.question-container > .daily-double-question-edit-container > .image-input-container > div > input {
+    font-size: 30px;
+    height: 35px;
+    width: 85vw;
+}
+
+.question-container > .normal-question-edit-container > .image-input-container > div > img,
+.question-container > .daily-double-question-edit-container > .image-input-container > div > img {
+    max-width: 500px;
+    max-height: 200px;
+}
+
+.question-container > .normal-question-edit-container > .make-daily-double-button-container,
+.question-container > .daily-double-question-edit-container > .unmake-daily-double-button-container {
+    position: absolute;
+    bottom: 1vw;
+    left: 1vw;
+}
+
+.question-container > .normal-question-edit-container > .make-daily-double-button-container > button,
+.question-container > .daily-double-question-edit-container > .unmake-daily-double-button-container > button {
+    width: 350px;
+    height: 60px;
+    font-size: 30px;
+}
+
+.question-container > .normal-question-edit-container > .home-button-container,
+.question-container > .daily-double-question-edit-container > .home-button-container {
+    position: absolute;
+    bottom: 1vw;
+    right: 1vw;
+}
+
+.question-container > .normal-question-edit-container > .home-button-container > button,
+.question-container > .daily-double-question-edit-container > .home-button-container > button {
+    width: 150px;
+    height: 60px;
+    font-size: 30px;
+}
+
 table, td, th {
     border: 5px solid black;
     border-collapse: collapse;
