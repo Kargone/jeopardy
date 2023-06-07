@@ -1,3 +1,8 @@
+:root {
+    --table-heading-font-size: 10vh;
+    --table-element-font-size: 7vh;
+}
+
 /* width */
 ::-webkit-scrollbar {
     width: 5px;
@@ -92,12 +97,12 @@
     animation: showOptionsContainer 1s forwards;
 }
 
-#create-board-container > div > .option-title:hover + .options-container {
+.invisible-input:not(:checked) + div > .option-title:hover + .options-container {
     animation: showOptionsContainer 1s forwards;
 }
 
-#create-board-container > div > .options-container:hover {
-    animation: showOptionsContainer2 1s forwards;
+.invisible-input:not(:checked) + div > .options-container:hover {
+    animation: showOptionsContainer 1s forwards;
 }
 
 .invisible-input:checked + div > .option-title > p {
@@ -133,17 +138,6 @@
 }
 
 @keyframes showOptionsContainer {
-    0%{
-        max-height: 0px;
-        opacity: 0;
-    }
-    100%{
-        max-height: 200px;
-        opacity: 1;
-    }
-}
-
-@keyframes showOptionsContainer2 {
     0%{
         max-height: attr(height);
         opacity: attr(opacity);
@@ -257,7 +251,7 @@ table {
 }
 
 th {
-    font-size: auto;
+    font-size: var(--table-heading-font-size);
     color: white;
     padding: 10px;
 }
@@ -266,6 +260,10 @@ tr {
     font-size: 60px;
     color: #f8ff00;
     padding: 10px;
+}
+
+td {
+    font-size: var(--table-element-font-size);
 }
 
 h1 {

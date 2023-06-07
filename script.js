@@ -6,6 +6,9 @@ let user_data = {
         'normal-jeopardy-question-amount': 5,
         'double-jeopardy-topic-amount': 5,
         'double-jeopardy-question-amount': 5,
+        'timer-delay': 5,
+        'timer-length-normal': 30,
+        'timer-length-daily-double': 60,
         'normal-jeopardy': true,
         'double-jeopardy': true,
         'final-jeopardy': true,
@@ -59,6 +62,9 @@ class Board {
         this.keyGoHome = settings['key-go-home'];
         this.oldQuestionsClicked = settings['old-questions-clicked'];
         this.teamOrder = settings['team-order'];
+        this.timerDelay = settings['timer-delay'];
+        this.timerLengthNormal = settings['timer-length-normal'];
+        this.timerLengthDailyDouble = settings['timer-length-daily-double'];
         switch(this.type) {
             case 'normal-jeopardy':
             case 'double-jeopardy': {
@@ -115,7 +121,10 @@ class Board {
                     'key_go_home': this.keyGoHome,
                     'old_question_clicked': this.oldQuestionsClicked,
                     'topic_number': topic_number,
-                    'question_in_topic_number': question_in_topic_number
+                    'question_in_topic_number': question_in_topic_number,
+                    'timer_delay': this.timerDelay,
+                    'timer_length_normal': this.timerLengthNormal,
+                    'timer_length_daily_double': this.timerLengthDailyDouble
                 }, true);
             }
         }
@@ -139,6 +148,9 @@ class Board {
         this.questionAmount = board_export['question-amount'];
         this.topicNames = board_export['topic-names'];
         this.questionInfos = board_export['question-infos'];
+        this.timerDelay = board_export['timer-delay'];
+        this.timerLengthNormal = board_export['timer-length-normal'];
+        this.timerLengthDailyDouble = board_export['timer-length-daily-double'];
         this.loadQuestionInfosFromExport();
     }
     loadQuestionInfosFromExport() {
@@ -183,6 +195,8 @@ class Board {
             console.log(board_container.innerHTML)
             // edit text
             // next board
+            document.querySelector(':root').style.setProperty('--table-heading-font-size', `${(window.innerHeight * .99 - 180) / 81}vh`);
+            document.querySelector(':root').style.setProperty('--table-element-font-size', `${(window.innerHeight * .99 - 180) / 101}vh`);
             document.getElementById('boards-container').appendChild(board_container);
             let question_container = document.createElement("div");
             question_container.id = `${this.type}-questions-container`;
@@ -221,6 +235,9 @@ class Board {
             'topic-amount': this.topicAmount,
             'question-amount': this.questionAmount,
             'topic-names': this.topicNames,
+            'timer-delay': this.timerDelay,
+            'timer-length-normal': this.timerLengthNormal,
+            'timer-length-daily-double': this.timerLengthDailyDouble,
             'question-infos': this.exportQuestionInfos()
         };
     }
@@ -229,50 +246,31 @@ class Board {
 class Question {
     constructor(object, loadFromSettings = true) {
         if (loadFromSettings) {
-            this.loadFromSettings(
-                object.board_type,
-                object.question_value, 
-                object.background_color, 
-                object.answer_color, 
-                object.question_color, 
-                object.images_allowed, 
-                object.key_reveal_answer, 
-                object.key_go_home, 
-                object.old_question_clicked,
-                object.topic_number,
-                object.question_in_topic_number
-            );
+            this.loadFromSettings(object);
         } else {
             this.loadFromExport(object);
         }
     }
-    loadFromSettings(board_type,
-        question_value, 
-        background_color, 
-        answer_color, 
-        question_color, 
-        images_allowed, 
-        key_reveal_answer, 
-        key_go_home, 
-        old_question_clicked,
-        topic_number,
-        question_in_topic_number) {
-        this.boardType = board_type;
-        this.questionValue = question_value;
-        this.backgroundColor = background_color;
-        this.answerColor = answer_color;
-        this.questionColor = question_color;
-        this.imagesAllowed = images_allowed;
-        this.keyRevealAnswer = key_reveal_answer;
-        this.keyGoHome = key_go_home;
-        this.oldQuestionsClicked = old_question_clicked;
-        this.topicNumber = topic_number;
-        this.questionInTopicNumber = question_in_topic_number;
+    loadFromSettings(object) {
+        this.boardType = object.board_type;
+        this.questionValue = object.question_value;
+        this.backgroundColor = object.background_color;
+        this.answerColor = object.answer_color;
+        this.questionColor = object.question_color;
+        this.imagesAllowed = object.images_allowed;
+        this.keyRevealAnswer = object.key_reveal_answer;
+        this.keyGoHome = object.key_go_home;
+        this.oldQuestionsClicked = object.old_question_clicked;
+        this.topicNumber = object.topic_number;
+        this.questionInTopicNumber = object.question_in_topic_number;
+        this.timerDelay = object.timer_delay;
+        this.timerLengthNormal = object.timer_length_normal;
+        this.timerLengthDailyDouble = object.timer_length_daily_double;
+        this.dailyDouble = false;
         this.imageURL = '';
         this.question = 'Enter question here';
         this.answer = 'Enter answer here';
         this.title = `Topic ${this.topicNumber} $${this.questionValue} Question`;
-
     }
     loadFromExport(question_export) {
         this.boardType = question_export['board-type'];
@@ -290,6 +288,10 @@ class Question {
         this.question = question_export['question'];
         this.answer = question_export['answer'];
         this.title = question_export['title'];
+        this.timerDelay = question_export['timer-delay'];
+        this.timerLengthNormal = question_export['timer-length-normal'];
+        this.timerLengthDailyDouble = question_export['timer-length-daily-double'];
+        this.dailyDouble = question_export['daily-double'];
     }
     loadForEditing() {
 
@@ -313,7 +315,11 @@ class Question {
             'image-URL': this.imageURL,
             'question': this.question,
             'answer': this.answer,
-            'title': this.title
+            'title': this.title,
+            'timer-delay': this.timerDelay,
+            'timer-length-normal': this.timerLengthNormal,
+            'timer-length-daily-double': this.timerLengthDailyDouble,
+            'daily-double': this.dailyDouble
         };
     }
 }
@@ -362,6 +368,7 @@ function createBoardListners() {
         user_data.game_boards.push({
             'name': new_board_settings.name,
             'settings': new_board_settings,
+            'file-path': 'main/',
             'boards': {
                 '1-normal-jeopardy-baord': settings['normal-jeopardy'] ? new Board(settings, true, 'normal-jeopardy').export() : false,
                 '2-double-jeopardy-baord': settings['double-jeopardy'] ? new Board(settings, true, 'double-jeopardy').export() : false,
@@ -369,6 +376,7 @@ function createBoardListners() {
             }
         });
         const game_boards = user_data.game_boards; 
+        launchFullScreen();
         CreateBoardHTML(game_boards[game_boards.length - 1]);
     });
 }
@@ -382,6 +390,18 @@ function CreateBoardHTML(game_board) {
     // if (typeof double_board != 'boolean') double_board.loadForEditing();
     // if (typeof final_board != 'boolean') final_board.loadForEditing();
 }
+
+function launchFullScreen() {
+    const element = document.documentElement;
+    if (element.requestFullScreen) {
+        element.requestFullScreen();
+    } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullScreen) {
+        element.webkitRequestFullScreen();
+    }
+}
+  
 
 function showBoard(type) {
 

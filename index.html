@@ -27,24 +27,47 @@
             <div class="options-container">
                 <hr>
                 <div class="option">
-                    <label>Name:</label>
+                    <label for="board-size">Name:</label>
                     <input id="board-name-input" value="Name here..." type="text"/>
                 </div>
                 <div class="option">
-                    <label>Normal jeopardy Topic amount:</label>
+                    <label for="board-size">Normal jeopardy Topic amount:</label>
                     <input id="board-normal-jeopardy-topic-amount-input" class="small-input" value="5" type="number"/>
                 </div>
                 <div class="option">
-                    <label>Normal jeopardy questions in each topic:</label>
+                    <label for="board-size">Normal jeopardy questions in each topic:</label>
                     <input id="board-normal-jeopardy-question-amount-input" class="small-input" value="5" type="number"/>
                 </div>
                 <div class="option">
-                    <label>Double jeopardy topic amount:</label>
+                    <label for="board-size">Double jeopardy topic amount:</label>
                     <input id="board-double-jeopardy-topic-amount-input" class="small-input" value="5" type="number"/>
                 </div>
                 <div class="option">
-                    <label>Double jeopardy questions in each topic:</label>
+                    <label for="board-size">Double jeopardy questions in each topic:</label>
                     <input id="board-double-jeopardy-question-amount-input" class="small-input" value="5" type="number"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="board-timer" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="board-timer">Timer</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="board-timer">Timer length (normal):</label>
+                    <input id="board-timer-length-normal-input" class="large-input" value="30" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="board-timer">Timer length (daily double):</label>
+                    <input id="board-timer-length-daily-double-input" class="large-input" value="30" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="board-timer">Timer delay:</label>
+                    <input id="board-timer-delay-input" class="small-input" value="5" type="number"/>
                 </div>
             </div>
         </div>
@@ -58,21 +81,21 @@
             <div class="options-container">
                 <hr>
                 <div class="option">
-                    <label>Normal Jeopardy</label>
+                    <label for="board-boards">Normal Jeopardy</label>
                     <label class="switch">
                         <input type="checkbox" id="board-normal-jeopardy-toggle">
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="option">
-                    <label>Double Jeopardy</label>
+                    <label for="board-boards">Double Jeopardy</label>
                     <label class="switch">
                         <input type="checkbox" id="board-double-jeopardy-toggle">
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="option">
-                    <label>Final Jeopardy</label>
+                    <label for="board-boards">Final Jeopardy</label>
                     <label class="switch">
                         <input type="checkbox" id="board-final-jeopardy-toggle">
                         <span class="slider round"></span>
@@ -90,23 +113,23 @@
             <div class="options-container">
                 <hr>
                 <div class="option">
-                    <label>Title:</label>
+                    <label for="board-colors">Title:</label>
                     <input id="board-title-color-input" class="large-input" value="#f8ff00" type="text"/>
                 </div>
                 <div class="option">
-                    <label>Topics:</label>
+                    <label for="board-colors">Topics:</label>
                     <input id="board-topic-color-input" class="large-input" value="#f8ff00" type="text"/>
                 </div>
                 <div class="option">
-                    <label>Background:</label>
+                    <label for="board-colors">Background:</label>
                     <input id="board-background-color-input" class="large-input" value="#073763" type="text"/>
                 </div>
                 <div class="option">
-                    <label>Answer:</label>
+                    <label for="board-colors">Answer:</label>
                     <input id="board-answer-color-input" class="large-input" value="#ffffff" type="text"/>
                 </div>
                 <div class="option">
-                    <label>Questions:</label>
+                    <label for="board-colors">Questions:</label>
                     <input id="board-question-color-input" class="large-input" value="#ffffff" type="text"/>
                 </div>
             </div>
@@ -121,18 +144,18 @@
             <div class="options-container">
                 <hr>
                 <div class="option">
-                    <label>Images allowed</label>
+                    <label for="board-question">Images allowed</label>
                     <label class="switch">
                         <input type="checkbox" id="board-images-allowed-toggle">
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="option">
-                    <label>Key Pressed to reveal answer</label>
+                    <label for="board-question">Key Pressed to reveal answer</label>
                     <input id="board-key-reveal-answer-input" class="small-input" value="" type="text"/>
                 </div>
                 <div class="option">
-                    <label>Key Pressed to go home</label>
+                    <label for="board-question">Key Pressed to go home</label>
                     <input id="board-key-go-home-input" class="small-input" value="" type="text"/>
                 </div>
             </div>
@@ -147,14 +170,14 @@
             <div class="options-container">
                 <hr>
                 <div class="option">
-                    <label>Old questions can be clicked on</label>
+                    <label for="board-board">Old questions can be clicked on</label>
                     <label class="switch">
                         <input type="checkbox" id="board-old-questions-clicked-toggle">
                         <span class="slider round"></span>
                     </label>
                 </div>
                 <div class="option">
-                    <label>Team order viewer</label>
+                    <label for="board-board">Team order viewer</label>
                     <label class="switch">
                         <input type="checkbox" id="board-team-order-toggle">
                         <span class="slider round"></span>
@@ -172,15 +195,15 @@
             <div class="options-container">
                 <hr>
                 <div class="option">
-                    <label>Normal Jeopardy:</label>
+                    <label for="board-equations">Normal Jeopardy:</label>
                     <input id="board-normal-jeopardy-m-input" class="large-input" value="100" type="number"/>
-                    <label>x topic number +</label>
+                    <label for="board-equations">x topic number +</label>
                     <input id="board-normal-jeopardy-b-input" class="large-input" value="0" type="number"/>
                 </div>
                 <div class="option">
-                    <label>Double Jeopardy:</label>
+                    <label for="board-equations">Double Jeopardy:</label>
                     <input id="board-double-jeopardy-m-input" class="large-input" value="100" type="number"/>
-                    <label>x topic number +</label>
+                    <label for="board-equations">x topic number +</label>
                     <input id="board-double-jeopardy-b-input" class="large-input" value="0" type="number"/>
                 </div>
             </div>
