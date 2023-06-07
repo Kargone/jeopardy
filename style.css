@@ -280,24 +280,38 @@ input:checked + .slider:before {
     font-size: 30px;
 }
 
+.home-button-container-board {
+    position: absolute;
+    top: 58px;
+    left: calc(1vw + 200px);
+}
+
+.home-button-container-board > button {
+    width: 150px;
+    height: 60px;
+    font-size: 30px;
+}
+
 .question-container {
     display: none;
 }
 
 .question-container > .normal-question-edit-container,
-.question-container > .daily-double-question-edit-container  {
+.question-container > .daily-double-question-edit-container,
+.question-container > .normal-question-preview-container,
+.question-container > .daily-double-question-preview-container  {
     display: none;
 }
 
-.question-container > .normal-question-edit-container > .preveiw-button-container,
-.question-container > .daily-double-question-edit-container > .preveiw-button-container {
+.question-container > .normal-question-edit-container > .preview-button-container,
+.question-container > .daily-double-question-edit-container > .preview-button-container {
     position: absolute;
     top: 62px;
     right: 1vw;
 }
 
-.question-container > .normal-question-edit-container > .preveiw-button-container > button,
-.question-container > .daily-double-question-edit-container > .preveiw-button-container > button {
+.question-container > .normal-question-edit-container > .preview-button-container > button,
+.question-container > .daily-double-question-edit-container > .preview-button-container > button {
     width: 200px;
     height: 60px;
     font-size: 30px;
@@ -391,6 +405,39 @@ input:checked + .slider:before {
     font-size: 30px;
 }
 
+.question-container > .normal-question-preview-container > .preview-timer-container {
+    position: absolute;
+    bottom: 1vw;
+    left: 1vw;
+    font-size: 40px;
+} 
+
+.question-container > .normal-question-preview-container > .preview-question-container > h2 {
+    font-size: 90px;
+}
+
+.question-container > .normal-question-preview-container > .preview-answer-container > h2 {
+    font-size: 90px;
+    opacity: 0;
+}
+
+.question-container > .normal-question-preview-container > .preview-image-container > image {
+    max-width: 500px;
+    max-height: 500px;
+}
+
+.question-container > .normal-question-preview-container > .next-button-container {
+    position: absolute;
+    bottom: 1vw;
+    right: 1vw;
+}
+
+.question-container > .normal-question-preview-container > .next-button-container > button {
+    width: 350px;
+    height: 60px;
+    font-size: 30px;
+}
+
 table, td, th {
     border: 5px solid black;
     border-collapse: collapse;
@@ -420,6 +467,10 @@ td {
 
 h1 {
     font-size: 70px;
+}
+
+h2 {
+    font-size: auto;
 }
 
 button {
