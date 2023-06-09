@@ -6,9 +6,9 @@ let user_data = {
         'normal-jeopardy-question-amount': 5,
         'double-jeopardy-topic-amount': 5,
         'double-jeopardy-question-amount': 5,
-        'timer-delay': 5,
-        'timer-length-normal': 30,
-        'timer-length-daily-double': 60,
+        'timer-delay': 1,
+        'timer-length-normal': 3,
+        'timer-length-daily-double': 5,
         'normal-jeopardy': true,
         'double-jeopardy': true,
         'final-jeopardy': true,
@@ -489,8 +489,14 @@ class Question {
                 </div>
                 <div id="${this.boardType}-normal-question-${this.questionNumber}-preview-container" class="normal-question-preview-container">
                     <h1 id="${this.boardType}-normal-question-${this.questionNumber}-preview-title">${this.title}</h1>
-                    <div class="preview-timer-container">
-                        <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-timer">Timer:${this.timerLengthNormal}</h2>
+                    <div class="timer-container">
+                        <div class="timer-number-container">
+                            <h2 id="${this.boardType}-normal-question-${this.questionNumber}-timer-text">00:30</h2>
+                        </div>
+                        <div class="timer-buttons-container">
+                            <button class="start-stop-button" id="${this.boardType}-normal-question-${this.questionNumber}-start-stop-button">Start</button>
+                            <button class="reset-button" id="${this.boardType}-normal-question-${this.questionNumber}-reset-button">Reset</button>
+                        </div>
                     </div>
                     <div class="preview-question-container">
                         <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
@@ -505,9 +511,56 @@ class Question {
                     <div class="next-button-container">
                         <button id="${this.boardType}-next-normal-${this.questionNumber}-button">Reveal Answer</button>
                     </div>
+                    <div id="${this.boardType}-normal-question-${this.questionNumber}-team-viewer" class="preview-team-viewer">
+                        <div class="team-view-container team-1">
+                            <div class="team-view-team-name">
+                                <h2>Team 1</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="${this.boardType}-normal-question-${this.questionNumber}-team-1-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="${this.boardType}-normal-question-${this.questionNumber}-team-1-add-button">+</button>
+                                <button class="substract-button" id="${this.boardType}-normal-question-${this.questionNumber}-team-1-subtract-button">-</button>
+                            </div>
+                        </div>
+                        <div class="team-view-container team-2 selected-team">
+                            <div class="team-view-team-name">
+                                <h2>Team 2</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="${this.boardType}-normal-question-${this.questionNumber}-team-2-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="${this.boardType}-normal-question-${this.questionNumber}-team-2-add-button">+</button>
+                                <button class="substract-button" id="${this.boardType}-normal-question-${this.questionNumber}-team-2-subtract-button">-</button>
+                            </div>
+                        </div>
+                        <div class="team-view-container team-3">
+                            <div class="team-view-team-name">
+                                <h2>Team 3</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="${this.boardType}-normal-question-${this.questionNumber}-team-3-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="${this.boardType}-normal-question-${this.questionNumber}-team-3-add-button">+</button>
+                                <button class="substract-button" id="${this.boardType}-normal-question-${this.questionNumber}-team-3-subtract-button">-</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-container" class="daily-double-question-preview-container">
                     <h1 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-title">Daily double!</h1>
+                    <div class="timer-container">
+                        <div class="timer-number-container">
+                            <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-timer-text">01:00</h2>
+                        </div>
+                        <div class="timer-buttons-container">
+                            <button class="start-stop-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button">Start</button>
+                            <button class="reset-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-reset-button">Reset</button>
+                        </div>
+                    </div>
                     <div class="wager-container">
                         <label>Wager:</label>
                         <input id="${this.boardType}-daily-double-wager-question-${this.questionNumber}-input" type="number" placeholder="0 - 1000..."/>
@@ -524,7 +577,44 @@ class Question {
                     <div class="preview-image-container">
                         <img id="${this.boardType}-daily-double-image-${this.questionNumber}-image-preview" src="${this.imageURL}" alt="Image"/>
                     </div>
-                    <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer"></div>
+                    <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer">
+                        <div class="team-view-container team-1">
+                            <div class="team-view-team-name">
+                                <h2>Team 1</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-team-1-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-team-1-add-button">+</button>
+                                <button class="substract-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-team-1-subtract-button">-</button>
+                            </div>
+                        </div>
+                        <div class="team-view-container team-2 selected-team">
+                            <div class="team-view-team-name">
+                                <h2>Team 2</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-team-2-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-team-2-add-button">+</button>
+                                <button class="substract-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-team-2-subtract-button">-</button>
+                            </div>
+                        </div>
+                        <div class="team-view-container team-3">
+                            <div class="team-view-team-name">
+                                <h2>Team 3</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-team-3-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-team-3-add-button">+</button>
+                                <button class="substract-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-team-3-subtract-button">-</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="next-button-container">
                         <button id="${this.boardType}-next-daily-double-${this.questionNumber}-button">Reveal Question</button>
                     </div>
@@ -537,7 +627,10 @@ class Question {
         this.showingDailyDoubles = false;
         this.revealedQuestion = false;
         this.revealedAnswer = false;
+        this.secondsLeft = copy(this.timerLengthNormal);
         this.wager = 0;
+        this.timerInterval = '';
+        this.timerGoing = false;
         const this_question = this;
         document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).addEventListener('click', function() {
             if (this_question.editingText) return;
@@ -639,6 +732,42 @@ class Question {
                 document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
             }
         });
+        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
+            if (this_question.timerGoing) {
+                this.textContent = 'Start';
+                this_question.timerGoing = false;
+                clearInterval(this_question.timerInterval);
+            } else {
+                this.textContent = 'Stop';
+                this_question.timerGoing = true;
+                this_question.timerInterval = setInterval(() => {
+                    this_question.secondsLeft--;
+                    updateTimer();
+                    if (this_question.secondsLeft <= 0) {
+                        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-start-stop-button`).textContent = 'Start';
+                        clearInterval(this_question.timerInterval);
+                    }
+                }, 1000);
+            }
+        });
+        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
+            if (this_question.timerGoing) {
+                this.textContent = 'Start';
+                this_question.timerGoing = false;
+                clearInterval(this_question.timerInterval);
+            } else {
+                this.textContent = 'Stop';
+                this_question.timerGoing = true;
+                this_question.timerInterval = setInterval(() => {
+                    this_question.secondsLeft--;
+                    updateTimer();
+                    if (this_question.secondsLeft <= 0) {
+                        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button`).textContent = 'Start';
+                        clearInterval(this_question.timerInterval);
+                    }
+                }, 1000);
+            }
+        });
         function updateQuestionEdit() {
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-title`).textContent = this_question.title;
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-title`).textContent = this_question.title;
@@ -656,13 +785,14 @@ class Question {
             document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
         }
         function updatePreview() {
+            clearInterval(this_question.timerInterval);
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = '';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = '';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).className = '';
             document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
             document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-title`).textContent = this_question.title;
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthNormal}`;
+            // document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthNormal}`;
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthDailyDouble}`;
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
@@ -675,9 +805,27 @@ class Question {
             if (this_question.imageURL === '') document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
                 else document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
             // <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer"></div>
+            if (this_question.dailyDouble) this_question.secondsLeft = copy(this_question.timerLengthDailyDouble);
+                else this_question.secondsLeft = copy(this_question.timerLengthNormal);
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+            updateTimer();
+            setTimeout(() => {
+                if (this_question.dailyDouble) document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).click();
+                    else document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).click();
+            }, this_question.timerDelay * 1000);
             this_question.revealedAnswer = false;
             this_question.revealedQuestion = false;
             this_question.wager = 0;
+            this_question.timerGoing = false;
+        }
+        function updateTimer() {
+            let mintues = Math.floor(this_question.secondsLeft / 60);
+            let seconds = Math.floor(this_question.secondsLeft - mintues * 60);
+            mintues = mintues >= 10 ? `${mintues}` : `0${mintues}`;
+            seconds = seconds >= 10 ? `${seconds}` : `0${seconds}`;
+            if (this_question.dailyDouble) document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-timer-text`).textContent = `${mintues}:${seconds}`;
+                else document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-timer-text`).textContent = `${mintues}:${seconds}`;
         }
     }
     loadForGame() {

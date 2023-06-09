@@ -414,13 +414,20 @@ input:checked + .slider:before {
 } 
 
 .question-container > .normal-question-preview-container > .preview-question-container > h2 {
-    font-size: 90px;
+    font-size: 70px;
+}
+
+.question-container > .normal-question-preview-container > .timer-container,
+.question-container > .daily-double-question-preview-container > .timer-container {
+    position: absolute;
+    top: 1vw;
+    left: 1vw;
 }
 
 .question-container > .normal-question-preview-container > .preview-answer-container > h2,
 .question-container > .daily-double-question-preview-container > .preview-question-container > h2,
 .question-container > .daily-double-question-preview-container > .preview-answer-container > h2 {
-    font-size: 90px;
+    font-size: 70px;
     opacity: 0;
 }
 
@@ -452,6 +459,104 @@ input:checked + .slider:before {
     height: 60px;
     font-size: 60px;
     width: 280px;
+}
+
+.question-container > .normal-question-preview-container > .preview-team-viewer > .team-1,
+.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-1 {
+    position: absolute;
+    bottom: 1vw;
+    left: 1vw;
+}
+
+.question-container > .normal-question-preview-container > .preview-team-viewer > .team-2,
+.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-2 {
+    position: absolute;
+    bottom: 1vw;
+    left: calc(2vw + 283px);
+}
+
+.question-container > .normal-question-preview-container > .preview-team-viewer > .team-3,
+.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-3 {
+    position: absolute;
+    bottom: 1vw;
+    left: calc(3vw + 283px * 2);
+}
+
+.timer-container,
+.team-view-container {
+    background-color: gray;
+    border: 3px solid black;
+    border-radius: 10px;
+    width: fit-content;
+    text-align: center;
+    overflow: hidden;
+    color: black;
+}
+
+.timer-container > .number-container,
+.team-view-container > .team-view-number-container {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; 
+    font-size: 50px;
+}
+
+.timer-container > .timer-number-container > h2,
+.team-view-container > .team-view-number-container > h2 {
+    margin: 0px;
+    font-size: 70px;
+}
+
+.team-view-container > .team-view-team-name {
+    background-color: black; 
+    padding: 0px; 
+    border-radius: 0px 0px 10px 10px; 
+    font-size: 30px;
+}
+
+.team-view-container > .team-view-team-name > h2 {
+    margin: 0px;
+    font-size: 50px;
+}
+
+.team-view-container > .team-view-team-name > h2,
+.team-view-container > .team-view-number-container > h2 {
+    color: #f8ff00;
+}
+
+.timer-container > .timer-buttons-container,
+.team-view-container > .team-view-buttons-container {
+    background-color: white; 
+    padding: 10px; 
+    border-radius: 10px 10px 0px 0px;
+}
+
+.timer-container > .timer-buttons-container > button,
+.team-view-container > .team-view-buttons-container > button {
+    color: black;
+}
+
+.timer-container > .timer-buttons-container > .start-stop-button,
+.team-view-container > .team-view-buttons-container > .add-button {
+    background-color: green; 
+    border: none; 
+    width: 120px; 
+    height: 40px; 
+    font-size: 30px; 
+    border-radius: 10px;
+}
+
+.timer-container > .timer-buttons-container > .reset-button,
+.team-view-container > .team-view-buttons-container > .substract-button {
+    background-color: red; 
+    border: none; 
+    width: 120px; 
+    height: 40px; 
+    font-size: 30px; 
+    border-radius: 10px; 
+    margin-left: 13px;
+}
+
+.selected-team {
+    border: 3px red solid;
 }
 
 .fade {
