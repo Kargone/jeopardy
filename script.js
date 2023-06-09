@@ -169,12 +169,21 @@ class Board {
             // next board
             board_container.innerHTML = `
                 <h1>${this.title}</h1>
-                <div class="edit-text">
-                    <label for="${this.type}-edit-text">Edit Text:</label>
-                    <label class="switch">
-                        <input type="checkbox" id="${this.type}-edit-text">
-                        <span class="slider round"></span>
-                    </label>
+                <div class="board-toggles">
+                    <div>
+                        <label for="${this.type}-edit-text">Edit Text:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="${this.type}-edit-text">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="${this.type}-show-daily-doubles">Show DDs:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="${this.type}-show-daily-doubles">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
                 </div>
                 <div class="home-button-container-board">
                     <button id="${this.type}-home-button">Home</button>
@@ -224,6 +233,7 @@ class Board {
     }
     attachListnersForEditing() {
         this.editingText = false;
+        this.showingDailyDoubles = false;
         const this_board = this;
         document.getElementById(`${this.type}-home-button`).addEventListener('click', function() {
             document.getElementById('boards-container').innerHTML = '';
@@ -275,6 +285,21 @@ class Board {
                             question_info.questionValue = parseInt(this.value);
                             question_info.title = `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`;
                         });
+                    }
+                }
+            });
+            document.getElementById(`${this.type}-show-daily-doubles`).addEventListener('click', function() {
+                this_board.showingDailyDoubles = this.checked;
+                for (let question_in_topic_number = 1; question_in_topic_number <= this_board.questionAmount; question_in_topic_number++) {
+                    for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
+                        const question_number = (topic_number - 1) * this_board.questionAmount + question_in_topic_number;
+                        const question_info = this_board.questionInfos[`question-${question_number}`];
+                        question_info.showingDailyDoubles = this.checked;
+                        if (this_board.showingDailyDoubles) {
+                            if (question_info.dailyDouble) document.getElementById(`${this_board.type}-board-question-${question_number}`).style.backgroundColor = 'red';
+                        } else {
+                            document.getElementById(`${this_board.type}-board-question-${question_number}`).style.backgroundColor = this_board.backgroundColor;
+                        }
                     }
                 }
             });
@@ -468,7 +493,7 @@ class Question {
                         <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-timer">Timer:${this.timerLengthNormal}</h2>
                     </div>
                     <div class="preview-question-container">
-                        <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-questions-text">Q:${this.question}</h2>
+                        <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
                     </div>
                     <div class="preview-answer-container">
                         <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-answer-text">A:${this.answer}</h2>
@@ -482,13 +507,37 @@ class Question {
                     </div>
                 </div>
                 <div id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-container" class="daily-double-question-preview-container">
+                    <h1 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-title">Daily double!</h1>
+                    <div class="wager-container">
+                        <label>Wager:</label>
+                        <input id="${this.boardType}-daily-double-wager-question-${this.questionNumber}-input" type="number" placeholder="0 - 1000..."/>
+                    </div>
+                    <div class="preview-timer-container">
+                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-timer">Timer:${this.timerLengthDailyDouble}</h2>
+                    </div>
+                    <div class="preview-question-container">
+                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
+                    </div>
+                    <div class="preview-answer-container">
+                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-answer-text">A:${this.answer}</h2>
+                    </div>
+                    <div class="preview-image-container">
+                        <img id="${this.boardType}-daily-double-image-${this.questionNumber}-image-preview" src="${this.imageURL}" alt="Image"/>
+                    </div>
+                    <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer"></div>
+                    <div class="next-button-container">
+                        <button id="${this.boardType}-next-daily-double-${this.questionNumber}-button">Reveal Question</button>
+                    </div>
                 </div>
             </div>
         `;
     }
     attachListnersForEditing() {
         this.editingText = false;
+        this.showingDailyDoubles = false;
+        this.revealedQuestion = false;
         this.revealedAnswer = false;
+        this.wager = 0;
         const this_question = this;
         document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).addEventListener('click', function() {
             if (this_question.editingText) return;
@@ -548,27 +597,47 @@ class Question {
             updateQuestionEdit();
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+            if (this_question.showingDailyDoubles) document.getElementById(`${this_question.boardType}-board-question-${this_question.questionNumber}`).style.backgroundColor = 'red';
         });
         document.getElementById(`${this.boardType}-unmake-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
             this_question.dailyDouble = false;
             updateQuestionEdit();
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+            if (this_question.showingDailyDoubles) document.getElementById(`${this_question.boardType}-board-question-${this_question.questionNumber}`).style.backgroundColor = this_question.backgroundColor;
         });
         document.getElementById(`${this.boardType}-preview-normal-question-${this.questionNumber}-button`).addEventListener('click', function() {
+            updatePreview();
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
-            console.log(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`)
-            console.log(document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`))
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
         });
         document.getElementById(`${this.boardType}-preview-daily-double-question-${this.questionNumber}-button`).addEventListener('click', function() {
+            updatePreview();
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
         });
         document.getElementById(`${this.boardType}-next-normal-${this.questionNumber}-button`).addEventListener('click', function() {
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).style.opacity = 1;
-            this.textContent = 'Go home';
+            if (this_question.revealedAnswer) {
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+            }
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
+            this.textContent = 'Go Home';
             this_question.revealedAnswer = true;
+        });
+        document.getElementById(`${this.boardType}-next-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
+            if (!this_question.revealedQuestion) {
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = 'unfade';
+                this.textContent = 'Reveal Answer';
+                this_question.revealedQuestion = true;
+            } else if (!this_question.revealedAnswer) {
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
+                this.textContent = 'Go Home';
+                this_question.revealedAnswer = true;
+            } else {
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+            }
         });
         function updateQuestionEdit() {
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-title`).textContent = this_question.title;
@@ -587,7 +656,28 @@ class Question {
             document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
         }
         function updatePreview() {
-
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = '';
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = '';
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).className = '';
+            document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
+            document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-title`).textContent = this_question.title;
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthNormal}`;
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthDailyDouble}`;
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).textContent = `A: ${this_question.answer}`;
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).textContent = `A: ${this_question.answer}`;
+            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).src = this_question.imageURL;
+            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).src = this_question.imageURL;
+            if (this_question.imageURL === '') document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
+                else document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
+            if (this_question.imageURL === '') document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
+                else document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
+            // <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer"></div>
+            this_question.revealedAnswer = false;
+            this_question.revealedQuestion = false;
+            this_question.wager = 0;
         }
     }
     loadForGame() {

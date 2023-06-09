@@ -239,19 +239,19 @@ input:checked + .slider:before {
     width: 55px;
 }
 
-.edit-text {
+.board-toggles {
     position: absolute;
-    top: 72px;
+    top: 54px;
     left: 1vw;
     font-size: 30px;
 }
 
-.edit-text > .switch > .slider {
+.board-toggles > div > .switch > .slider {
     height: 28px;
     width: 43px;
 }
 
-.edit-text > .switch > .slider.round:before {
+.board-toggles > div > .switch > .slider.round:before {
     height: 28px;
     width: 28px;
 }
@@ -283,7 +283,7 @@ input:checked + .slider:before {
 .home-button-container-board {
     position: absolute;
     top: 58px;
-    left: calc(1vw + 200px);
+    left: calc(1vw + 270px);
 }
 
 .home-button-container-board > button {
@@ -405,7 +405,8 @@ input:checked + .slider:before {
     font-size: 30px;
 }
 
-.question-container > .normal-question-preview-container > .preview-timer-container {
+.question-container > .normal-question-preview-container > .preview-timer-container,
+.question-container > .daily-double-question-preview-container > .preview-timer-container {
     position: absolute;
     bottom: 1vw;
     left: 1vw;
@@ -416,26 +417,71 @@ input:checked + .slider:before {
     font-size: 90px;
 }
 
-.question-container > .normal-question-preview-container > .preview-answer-container > h2 {
+.question-container > .normal-question-preview-container > .preview-answer-container > h2,
+.question-container > .daily-double-question-preview-container > .preview-question-container > h2,
+.question-container > .daily-double-question-preview-container > .preview-answer-container > h2 {
     font-size: 90px;
     opacity: 0;
 }
 
-.question-container > .normal-question-preview-container > .preview-image-container > image {
+.question-container > .normal-question-preview-container > .preview-image-container > image,
+.question-container > .daily-double-question-preview-container > .preview-image-container > image {
     max-width: 500px;
     max-height: 500px;
 }
 
-.question-container > .normal-question-preview-container > .next-button-container {
+.question-container > .normal-question-preview-container > .next-button-container,
+.question-container > .daily-double-question-preview-container > .next-button-container {
     position: absolute;
     bottom: 1vw;
     right: 1vw;
 }
 
-.question-container > .normal-question-preview-container > .next-button-container > button {
+.question-container > .normal-question-preview-container > .next-button-container > button,
+.question-container > .daily-double-question-preview-container > .next-button-container > button {
     width: 350px;
     height: 60px;
     font-size: 30px;
+}
+
+.question-container > .daily-double-question-preview-container > .wager-container > label {
+    font-size: 60px;
+}
+
+.question-container > .daily-double-question-preview-container > .wager-container > input {
+    height: 60px;
+    font-size: 60px;
+    width: 280px;
+}
+
+.fade {
+    animation: forwards fade 1s;
+}
+
+@keyframes fade {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.unfade {
+    animation: forwards unfade 1s;
+}
+
+@keyframes unfade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.already-faded {
+    opacity: 0;
 }
 
 table, td, th {
