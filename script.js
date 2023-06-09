@@ -13,7 +13,8 @@ let user_data = {
         'double-jeopardy': true,
         'final-jeopardy': true,
         'title-color': '#f8ff00',
-        'topic-color': '#f8ff00',
+        'topic-color': '#ffffff',
+        'question-board-color': '#f8ff00',
         'background-color': '#073763',
         'answer-color': '#ffffff',
         'question-color': '#ffffff',
@@ -31,14 +32,14 @@ let user_data = {
 // 'team-order': true,
 
 class Board {
-    constructor(object, loadFromSettings, board_type = 'normal-jeopardy') {
+    constructor(object, loadFromSettings, board_index, board_type = 'normal-jeopardy') {
         if (loadFromSettings) {
-            this.loadFromSettings(object, board_type);
+            this.loadFromSettings(object, board_type, board_index);
         } else {
             this.loadFromExport(object);
         }
     }
-    loadFromSettings(settings, board_type) {
+    loadFromSettings(settings, board_type, board_index) {
         this.type = board_type;
         switch(this.type) {
             case 'normal-jeopardy': 
@@ -55,6 +56,7 @@ class Board {
         }
         this.titleColor = settings['title-color'];
         this.topicColor = settings['topic-color'];
+        this.questionBoardColor = settings['question-board-color'];
         this.backgroundColor = settings['background-color'];
         this.answerColor = settings['answer-color'];
         this.questionColor = settings['question-color'];
@@ -101,6 +103,7 @@ class Board {
         this.topicNames = [];
         for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++)
             this.topicNames.push(`Topic ${topic_number}`);
+        this.boardIndex = board_index;
         this.questionInfos = {};
         this.loadQuestionInfosFromSettings();
     }
@@ -123,7 +126,8 @@ class Board {
                     'question_in_topic_number': question_in_topic_number,
                     'timer_delay': this.timerDelay,
                     'timer_length_normal': this.timerLengthNormal,
-                    'timer_length_daily_double': this.timerLengthDailyDouble
+                    'timer_length_daily_double': this.timerLengthDailyDouble,
+                    'board_index': this.boardIndex
                 }, true);
             }
         }
@@ -131,6 +135,7 @@ class Board {
     loadFromExport(board_export) {
         this.type = board_export['type'];
         this.title = board_export['title'];
+        this.questionBoardColor = board_export['question-board-color'];
         this.titleColor = board_export['title-color'];
         this.topicColor = board_export['topic-color'];
         this.backgroundColor = board_export['background-color'];
@@ -148,6 +153,7 @@ class Board {
         this.timerDelay = board_export['timer-delay'];
         this.timerLengthNormal = board_export['timer-length-normal'];
         this.timerLengthDailyDouble = board_export['timer-length-daily-double'];
+        this.boardIndex = board_export['board-index'];
         this.loadQuestionInfosFromExport();
     }
     loadQuestionInfosFromExport() {
@@ -161,15 +167,18 @@ class Board {
         this.questionInfos = new_question_info;
     }
     loadForEditing() {
+        document.querySelector(':root').style.setProperty('--title-color', this.titleColor);
+        document.querySelector(':root').style.setProperty('--topic-color', this.topicColor);
+        document.querySelector(':root').style.setProperty('--question-board-color', this.questionBoardColor);
+        document.querySelector(':root').style.setProperty('--background-color', this.backgroundColor);
+        document.querySelector(':root').style.setProperty('--question-color', this.questionColor);
+        document.querySelector(':root').style.setProperty('--answer-color', this.answerColor);
         let board_container = document.createElement("div");
         board_container.id = `${this.type}-board-container`;
         if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
-            // title
-            // edit text
-            // next board
             board_container.innerHTML = `
                 <div id="${this.type}-title-container">
-                    <h1>${this.title}</h1>
+                    <h1 class="board-title">${this.title}</h1>
                 </div>
                 <div class="board-toggles">
                     <div>
@@ -216,7 +225,7 @@ class Board {
             board_container.innerHTML += table;
             document.querySelector(':root').style.setProperty('--table-heading-font-size', `${(window.innerHeight * .99 - 180) / 81}vh`);
             document.querySelector(':root').style.setProperty('--table-element-font-size', `${(window.innerHeight * .99 - 180) / 101}vh`);
-            // board_container.style.display = 'none';
+            board_container.style.display = 'none';
             document.getElementById('boards-container').appendChild(board_container);
             let question_container = document.createElement("div");
             question_container.id = `${this.type}-questions-container`;
@@ -240,6 +249,23 @@ class Board {
         document.getElementById(`${this.type}-home-button`).addEventListener('click', function() {
             document.getElementById('boards-container').innerHTML = '';
             hideScreens('home-container');
+        });
+        document.getElementById(`${this.type}-next-board`).addEventListener('click', function() {
+            document.getElementById(`${this_board.type}-board-container`).style.display = 'none';
+            let index = 0;
+            if (this_board.type === 'double-jeopardy') index = 1; 
+            if (this_board.type === 'final-jeopardy') index = 2;
+            for (let i = 0; i < 3; i++) {
+                index = (index + 1) % 3;
+                const boards = user_data.game_boards[this_board.boardIndex].boards;
+                console.log(index)
+                console.log(Object.keys(boards)[index])
+                console.log(boards[Object.keys(boards)[index]])
+                if (boards[Object.keys(boards)[index]] != false) {
+                    document.getElementById(`${boards[Object.keys(boards)[index]].type}-board-container`).style.display = 'block';
+                    break;
+                }
+            }
         });
         if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
             document.getElementById(`${this.type}-edit-text`).addEventListener('click', function() {
@@ -345,6 +371,7 @@ class Board {
             'type': this.type,
             'title-color': this.titleColor,
             'topic-color': this.topicColor,
+            'question-board-color': this.questionBoardColor,
             'background-color': this.backgroundColor,
             'answer-color': this.answerColor,
             'question-color': this.questionColor,
@@ -359,6 +386,7 @@ class Board {
             'timer-delay': this.timerDelay,
             'timer-length-normal': this.timerLengthNormal,
             'timer-length-daily-double': this.timerLengthDailyDouble,
+            'board-index': this.boardIndex,
             'question-infos': this.exportQuestionInfos()
         };
     }
@@ -388,6 +416,7 @@ class Question {
         this.timerLengthNormal = object.timer_length_normal;
         this.timerLengthDailyDouble = object.timer_length_daily_double;
         this.dailyDouble = false;
+        this.boardIndex = object.board_index;
         this.imageURL = '';
         this.question = 'Enter question here';
         this.answer = 'Enter answer here';
@@ -413,6 +442,7 @@ class Question {
         this.timerLengthNormal = question_export['timer-length-normal'];
         this.timerLengthDailyDouble = question_export['timer-length-daily-double'];
         this.dailyDouble = question_export['daily-double'];
+        this.boardIndex = question_export['board-index'];
     }
     loadForEditing() {
         return `
@@ -828,6 +858,9 @@ class Question {
             if (!this_question.dailyDouble) setTimeout(() => {
                 document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).click();
             }, this_question.timerDelay * 1000);
+            document.querySelector(':root').style.setProperty('--background-color', this_question.backgroundColor);
+            document.querySelector(':root').style.setProperty('--question-color', this_question.questionColor);
+            document.querySelector(':root').style.setProperty('--answer-color', this_question.answerColor);
             this_question.revealedAnswer = false;
             this_question.revealedQuestion = false;
             this_question.timerGoing = false;
@@ -868,7 +901,8 @@ class Question {
             'timer-delay': this.timerDelay,
             'timer-length-normal': this.timerLengthNormal,
             'timer-length-daily-double': this.timerLengthDailyDouble,
-            'daily-double': this.dailyDouble
+            'daily-double': this.dailyDouble,
+            'board-index': this.boardIndex
         };
     }
 }
@@ -923,30 +957,38 @@ function createBoardListners() {
     }
     document.getElementById("finalize-board").addEventListener('click', function() {
         const settings = new_board_settings;
+        const board_index = user_data.game_boards.length;
         user_data.game_boards.push({
             'name': new_board_settings.name,
             'settings': new_board_settings,
             'file-path': 'main/',
             'boards': {
-                '1-normal-jeopardy-board': settings['normal-jeopardy'] ? new Board(settings, true, 'normal-jeopardy').export() : false,
-                '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, 'double-jeopardy').export() : false,
-                '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, 'final-jeopardy').export() : false
+                '1-normal-jeopardy-board': settings['normal-jeopardy'] ? new Board(settings, true, board_index, 'normal-jeopardy').export() : false,
+                '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, board_index, 'double-jeopardy').export() : false,
+                '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, board_index, 'final-jeopardy').export() : false
             }
         });
         const game_boards = user_data.game_boards; 
         launchFullScreen();
-        CreateBoardHTML(game_boards[game_boards.length - 1]);
+        createBoardHTML(game_boards[game_boards.length - 1]);
     });
 }
 
-function CreateBoardHTML(game_board) {
+function createBoardHTML(game_board) {
     hideScreens('boards-container');
     let normal_board = game_board.boards['1-normal-jeopardy-board'] != false ? new Board(game_board.boards['1-normal-jeopardy-board'], false) : false; 
     let double_board = game_board.boards['2-double-jeopardy-board'] != false ? new Board(game_board.boards['2-double-jeopardy-board'], false) : false;
     let final_board = game_board.boards['3-final-jeopardy-board'] != false ? new Board(game_board.boards['3-final-jeopardy-board'], false) : false;
     if (typeof normal_board != 'boolean') normal_board.loadForEditing();
-    // if (typeof double_board != 'boolean') double_board.loadForEditing();
+    if (typeof double_board != 'boolean') double_board.loadForEditing();
     // if (typeof final_board != 'boolean') final_board.loadForEditing();
+    if (typeof normal_board != 'boolean') {
+        document.getElementById("normal-jeopardy-board-container").style.display = 'block';
+    } else if (typeof double_board != 'boolean') {
+        document.getElementById("double-jeopardy-board-container").style.display = 'block';
+    } else {
+        document.getElementById("final-jeopardy-board-container").style.display = 'block';
+    }
 }
 
 function launchFullScreen() {
@@ -958,10 +1000,6 @@ function launchFullScreen() {
     } else if (element.webkitRequestFullScreen) {
         element.webkitRequestFullScreen();
     }
-}
-
-function showBoard(type) {
-
 }
 
 createBoardListners();
