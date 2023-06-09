@@ -168,7 +168,9 @@ class Board {
             // edit text
             // next board
             board_container.innerHTML = `
-                <h1>${this.title}</h1>
+                <div id="${this.type}-title-container">
+                    <h1>${this.title}</h1>
+                </div>
                 <div class="board-toggles">
                     <div>
                         <label for="${this.type}-edit-text">Edit Text:</label>
@@ -242,6 +244,9 @@ class Board {
         if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
             document.getElementById(`${this.type}-edit-text`).addEventListener('click', function() {
                 if (this_board.editingText) {
+                    document.getElementById(`${this_board.type}-title-container`).innerHTML = `
+                        <h1>${this_board.title}</h1>
+                    `;
                     for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
                         document.getElementById(`${this_board.type}-topic-${topic_number}`).innerHTML = `
                             ${this_board.topicNames[topic_number - 1]}
@@ -260,6 +265,12 @@ class Board {
                     return this_board.editingText = false;
                 }
                 this_board.editingText = true;
+                document.getElementById(`${this_board.type}-title-container`).innerHTML = `
+                    <input id="${this_board.type}-title-input" class="title-input" value="${this_board.title}" type="text"/>
+                `;
+                document.getElementById(`${this_board.type}-title-input`).addEventListener('change', function(){
+                    this_board.title = this.value;
+                });
                 for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
                     document.getElementById(`${this_board.type}-topic-${topic_number}`).innerHTML = `
                         <input id="${this_board.type}-topic-${topic_number}-input" class="topic-heading-input" value="${this_board.topicNames[topic_number - 1]}" type="text"/>
@@ -643,47 +654,67 @@ class Question {
             }
             updateQuestionEdit();
         });
-        document.getElementById(`${this.boardType}-home-normal-${this.questionNumber}-button`).addEventListener('click', function() {
-            document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
-            document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
-        });
-        document.getElementById(`${this.boardType}-home-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
-            document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
-            document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
-        });
-        document.getElementById(`${this.boardType}-normal-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.timerDelay = this.value;
-        });
-        document.getElementById(`${this.boardType}-daily-double-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.timerDelay = this.value;
-        });
+        for (const question_type of ['normal', 'daily-double']) {
+            for (const team_name of ['team-1', 'team-2', 'team-3']) {
+                document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-${team_name}-add-button`).addEventListener('click', function() {
+                    document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent) + this_question.wager;
+                });
+                document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-${team_name}-subtract-button`).addEventListener('click', function() {
+                    document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent) - this_question.wager;
+                });
+            }
+            document.getElementById(`${this.boardType}-home-${question_type}-${this.questionNumber}-button`).addEventListener('click', function() {
+                document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+                document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+            });
+            document.getElementById(`${this.boardType}-${question_type}-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
+                this_question.timerDelay = this.value;
+            });
+            document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-input`).addEventListener('change', function() {
+                this_question.question = this.value;
+            });
+            document.getElementById(`${this.boardType}-${question_type}-answer-${this.questionNumber}-input`).addEventListener('change', function() {
+                this_question.answer = this.value;
+            });
+            document.getElementById(`${this.boardType}-${question_type}-image-${this.questionNumber}-input`).addEventListener('change', function() {
+                this_question.imageURL = this.value;
+                document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+            });
+            document.getElementById(`${this.boardType}-preview-${question_type}-question-${this.questionNumber}-button`).addEventListener('click', function() {
+                updatePreview();
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
+            });
+            document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
+                if (this_question.timerGoing) {
+                    this.textContent = 'Start';
+                    this_question.timerGoing = false;
+                    clearInterval(this_question.timerInterval);
+                } else {
+                    if (this_question.secondsLeft <= 0) return;
+                    this.textContent = 'Stop';
+                    this_question.timerGoing = true;
+                    this_question.timerInterval = setInterval(() => {
+                        if (this_question.secondsLeft <= 0) {
+                            document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                            clearInterval(this_question.timerInterval);
+                        }
+                        this_question.secondsLeft--;
+                        updateTimer();
+                        if (this_question.secondsLeft <= 0) {
+                            document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                            clearInterval(this_question.timerInterval);
+                        }
+                    }, 1000);
+                }
+            });
+        }
         document.getElementById(`${this.boardType}-normal-timer-${this.questionNumber}-input`).addEventListener('change', function() {
             this_question.timerLengthNormal = this.value;
         });
         document.getElementById(`${this.boardType}-daily-double-timer-${this.questionNumber}-input`).addEventListener('change', function() {
             this_question.timerLengthDailyDouble = this.value;
-        });
-        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.question = this.value;
-        });
-        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.question = this.value;
-        });
-        document.getElementById(`${this.boardType}-normal-answer-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.answer = this.value;
-        });
-        document.getElementById(`${this.boardType}-daily-double-answer-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.answer = this.value;
-        });
-        document.getElementById(`${this.boardType}-normal-image-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.imageURL = this.value;
-            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
-        });
-        document.getElementById(`${this.boardType}-daily-double-image-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.imageURL = this.value;
-            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
         });
         document.getElementById(`${this.boardType}-make-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
             this_question.dailyDouble = true;
@@ -699,15 +730,12 @@ class Question {
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
             if (this_question.showingDailyDoubles) document.getElementById(`${this_question.boardType}-board-question-${this_question.questionNumber}`).style.backgroundColor = this_question.backgroundColor;
         });
-        document.getElementById(`${this.boardType}-preview-normal-question-${this.questionNumber}-button`).addEventListener('click', function() {
-            updatePreview();
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
-        });
-        document.getElementById(`${this.boardType}-preview-daily-double-question-${this.questionNumber}-button`).addEventListener('click', function() {
-            updatePreview();
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
+        document.getElementById(`${this.boardType}-daily-double-wager-question-${this.questionNumber}-input`).addEventListener('change', function() {
+            this_question.wager = parseInt(this.value);
+            for (const team_name of ['team-1', 'team-2', 'team-3']) {
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-add-button`).textContent = `+${this_question.wager}`;
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-subtract-button`).textContent = `-${this_question.wager}`;
+            }
         });
         document.getElementById(`${this.boardType}-next-normal-${this.questionNumber}-button`).addEventListener('click', function() {
             if (this_question.revealedAnswer) {
@@ -716,6 +744,9 @@ class Question {
             }
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
             this.textContent = 'Go Home';
+            this_question.timerGoing = false;
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+            clearInterval(this_question.timerInterval);
             this_question.revealedAnswer = true;
         });
         document.getElementById(`${this.boardType}-next-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
@@ -723,105 +754,88 @@ class Question {
                 document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = 'unfade';
                 this.textContent = 'Reveal Answer';
                 this_question.revealedQuestion = true;
+                setTimeout(() => {
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).click();
+                }, 1000 * this_question.timerDelay);
             } else if (!this_question.revealedAnswer) {
                 document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
                 this.textContent = 'Go Home';
+                this_question.timerGoing = false;
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                clearInterval(this_question.timerInterval);
                 this_question.revealedAnswer = true;
             } else {
                 document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
                 document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
             }
         });
-        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
-            if (this_question.timerGoing) {
-                this.textContent = 'Start';
-                this_question.timerGoing = false;
-                clearInterval(this_question.timerInterval);
-            } else {
-                this.textContent = 'Stop';
-                this_question.timerGoing = true;
-                this_question.timerInterval = setInterval(() => {
-                    this_question.secondsLeft--;
-                    updateTimer();
-                    if (this_question.secondsLeft <= 0) {
-                        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-start-stop-button`).textContent = 'Start';
-                        clearInterval(this_question.timerInterval);
-                    }
-                }, 1000);
-            }
+        document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-reset-button`).addEventListener('click', function() {
+            clearInterval(this_question.timerInterval);
+            this_question.timerGoing = false;
+            this_question.secondsLeft = copy(this_question.timerLengthNormal);
+            updateTimer();
+            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
         });
-        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
-            if (this_question.timerGoing) {
-                this.textContent = 'Start';
-                this_question.timerGoing = false;
-                clearInterval(this_question.timerInterval);
-            } else {
-                this.textContent = 'Stop';
-                this_question.timerGoing = true;
-                this_question.timerInterval = setInterval(() => {
-                    this_question.secondsLeft--;
-                    updateTimer();
-                    if (this_question.secondsLeft <= 0) {
-                        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button`).textContent = 'Start';
-                        clearInterval(this_question.timerInterval);
-                    }
-                }, 1000);
-            }
+        document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-reset-button`).addEventListener('click', function() {
+            clearInterval(this_question.timerInterval);
+            this_question.timerGoing = false;
+            this_question.secondsLeft = copy(this_question.timerLengthDailyDouble);
+            updateTimer();
+            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
         });
         function updateQuestionEdit() {
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-title`).textContent = this_question.title;
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-title`).textContent = this_question.title;
-            document.getElementById(`${this_question.boardType}-normal-timer-delay-${this_question.questionNumber}-input`).value = this_question.timerDelay;
-            document.getElementById(`${this_question.boardType}-daily-double-timer-delay-${this_question.questionNumber}-input`).value = this_question.timerDelay;
             document.getElementById(`${this_question.boardType}-normal-timer-${this_question.questionNumber}-input`).value = this_question.timerLengthNormal;
             document.getElementById(`${this_question.boardType}-daily-double-timer-${this_question.questionNumber}-input`).value = this_question.timerLengthDailyDouble;
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-input`).value = this_question.question;
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-input`).value = this_question.question;
-            document.getElementById(`${this_question.boardType}-normal-answer-${this_question.questionNumber}-input`).value = this_question.answer;
-            document.getElementById(`${this_question.boardType}-daily-double-answer-${this_question.questionNumber}-input`).value = this_question.answer;
-            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-input`).value = this_question.imageURL;
-            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-input`).value = this_question.imageURL;
-            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
-            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+            for (const question_type of ['normal', 'daily-double']) {
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-title`).textContent = this_question.title;
+                document.getElementById(`${this_question.boardType}-${question_type}-timer-delay-${this_question.questionNumber}-input`).value = this_question.timerDelay;
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-input`).value = this_question.question;
+                document.getElementById(`${this_question.boardType}-${question_type}-answer-${this_question.questionNumber}-input`).value = this_question.answer;
+                document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-input`).value = this_question.imageURL;
+                document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
+            }
         }
         function updatePreview() {
             clearInterval(this_question.timerInterval);
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = '';
+            if (this_question.dailyDouble) this_question.wager = 0;
+                else this_question.wager = copy(this_question.questionValue);
+            for (const question_type of ['normal', 'daily-double']) {
+                for (const team_name of ['team-1', 'team-2', 'team-3']) {
+                    document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent = '0';
+                    document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-add-button`).textContent = `+${this_question.wager}`;
+                    document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-subtract-button`).textContent = `-${this_question.wager}`;
+                }
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-preview-answer-text`).className = '';
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-preview-answer-text`).textContent = `A: ${this_question.answer}`;
+                document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-image-preview`).src = this_question.imageURL;
+            }
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = '';
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).className = '';
             document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
-            document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
+            document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).textContent = 'Reveal Question';
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-title`).textContent = this_question.title;
-            // document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthNormal}`;
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-timer`).textContent = `Timer:${this_question.timerLengthDailyDouble}`;
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).textContent = `Q: ${this_question.question}`;
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).textContent = `A: ${this_question.answer}`;
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).textContent = `A: ${this_question.answer}`;
-            document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).src = this_question.imageURL;
-            document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).src = this_question.imageURL;
-            if (this_question.imageURL === '') document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
-                else document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
-            if (this_question.imageURL === '') document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
-                else document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
-            // <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer"></div>
+            if (this_question.imageURL === '') {
+                document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
+                document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'none';
+            } else {
+                document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
+                document.getElementById(`${this_question.boardType}-normal-image-${this_question.questionNumber}-image-preview`).style.display = 'block';
+            }
             if (this_question.dailyDouble) this_question.secondsLeft = copy(this_question.timerLengthDailyDouble);
                 else this_question.secondsLeft = copy(this_question.timerLengthNormal);
-            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
-            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
             updateTimer();
-            setTimeout(() => {
-                if (this_question.dailyDouble) document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).click();
-                    else document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).click();
+            if (!this_question.dailyDouble) setTimeout(() => {
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).click();
             }, this_question.timerDelay * 1000);
             this_question.revealedAnswer = false;
             this_question.revealedQuestion = false;
-            this_question.wager = 0;
             this_question.timerGoing = false;
         }
         function updateTimer() {
             let mintues = Math.floor(this_question.secondsLeft / 60);
             let seconds = Math.floor(this_question.secondsLeft - mintues * 60);
+            if (seconds < 0) seconds = 0;
             mintues = mintues >= 10 ? `${mintues}` : `0${mintues}`;
             seconds = seconds >= 10 ? `${seconds}` : `0${seconds}`;
             if (this_question.dailyDouble) document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-timer-text`).textContent = `${mintues}:${seconds}`;

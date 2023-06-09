@@ -1,6 +1,17 @@
 :root {
     --table-heading-font-size: 10vh;
     --table-element-font-size: 7vh;
+    /* --title-color: #f8f8f8;
+    --topic-color: #f8f8f8;
+    --background-color: #073763;
+    --question-color: #ffffff;
+    --answer-color: #ffffff; */
+    --title-color: red;
+    --topic-color: red;
+    --question-board-color: red;
+    --background-color: red;
+    --question-color: red;
+    --answer-color: red;
 }
 
 /* width */
@@ -254,6 +265,14 @@ input:checked + .slider:before {
 .board-toggles > div > .switch > .slider.round:before {
     height: 28px;
     width: 28px;
+}
+
+.title-input {
+    font-size: 65px;
+    height: 70px;
+    width: 42vw;
+    margin-top: 46.9px;
+    margin-bottom: 46.9px;
 }
 
 .topic-heading-input {
