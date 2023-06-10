@@ -310,6 +310,18 @@ input:checked + .slider:before {
     font-size: 30px;
 }
 
+.home-button-container-final-board {
+    position: absolute;
+    top: 58px;
+    left: 1vw;
+}
+
+.home-button-container-final-board > button {
+    width: 150px;
+    height: 60px;
+    font-size: 30px;
+}
+
 .question-container {
     display: none;
 }
@@ -317,7 +329,8 @@ input:checked + .slider:before {
 .question-container > .normal-question-edit-container,
 .question-container > .daily-double-question-edit-container,
 .question-container > .normal-question-preview-container,
-.question-container > .daily-double-question-preview-container  {
+.question-container > .daily-double-question-preview-container,
+.final-jeopardy-container > .final-jeopardy-preview-container  {
     display: none;
 }
 
@@ -329,8 +342,16 @@ input:checked + .slider:before {
     color: var(--question-color);
 }
 
+.final-jeopardy-container > .final-jeopardy-edit-container > .preview-button-container {
+    position: absolute;
+    bottom: 1vw;
+    right: 1vw;
+    color: var(--question-color);
+}
+
 .question-container > .normal-question-edit-container > .preview-button-container > button,
-.question-container > .daily-double-question-edit-container > .preview-button-container > button {
+.question-container > .daily-double-question-edit-container > .preview-button-container > button,
+.final-jeopardy-container > .final-jeopardy-edit-container > .preview-button-container > button {
     width: 200px;
     height: 60px;
     font-size: 30px;
@@ -345,7 +366,9 @@ input:checked + .slider:before {
 
 .question-container > .normal-question-edit-container > .question-input-container,
 .question-container > .normal-question-edit-container > .answer-input-container,
-.question-container > .daily-double-question-edit-container > .answer-input-container  {
+.question-container > .daily-double-question-edit-container > .answer-input-container,
+.final-jeopardy-container > .final-jeopardy-edit-container > .question-input-container,
+.final-jeopardy-container > .final-jeopardy-edit-container > .answer-input-container {
     margin-top: 19vh;
 }
 
@@ -360,38 +383,46 @@ input:checked + .slider:before {
 .question-container > .normal-question-edit-container > .question-input-container > label,
 .question-container > .normal-question-edit-container > .answer-input-container > label,
 .question-container > .daily-double-question-edit-container > .question-input-container > label,
-.question-container > .daily-double-question-edit-container > .answer-input-container > label  {
+.question-container > .daily-double-question-edit-container > .answer-input-container > label,
+.final-jeopardy-container > .final-jeopardy-edit-container > .question-input-container > label,
+.final-jeopardy-container > .final-jeopardy-edit-container > .answer-input-container > label {
     font-size: 60px;
 }
 
 .question-container > .normal-question-edit-container > .question-input-container > input,
 .question-container > .normal-question-edit-container > .answer-input-container > input,
 .question-container > .daily-double-question-edit-container > .question-input-container > input,
-.question-container > .daily-double-question-edit-container > .answer-input-container > input  {
+.question-container > .daily-double-question-edit-container > .answer-input-container > input,
+.final-jeopardy-container > .final-jeopardy-edit-container > .question-input-container > input,
+.final-jeopardy-container > .final-jeopardy-edit-container > .answer-input-container > input {
     height: 60px;
     width: 85vw;
     font-size: 60px;
 }
 
 .question-container > .normal-question-edit-container > .image-input-container,
-.question-container > .daily-double-question-edit-container > .image-input-container  {
+.question-container > .daily-double-question-edit-container > .image-input-container,
+.final-jeopardy-container > .final-jeopardy-edit-container > .image-input-container  {
     margin-top: 5vh;      
 }
 
 .question-container > .normal-question-edit-container > .image-input-container > div > label,
-.question-container > .daily-double-question-edit-container > .image-input-container > div > label {
+.question-container > .daily-double-question-edit-container > .image-input-container > div > label,
+.final-jeopardy-container > .final-jeopardy-edit-container > .image-input-container > div > label {
     font-size: 30px;
 }
 
 .question-container > .normal-question-edit-container > .image-input-container > div > input,
-.question-container > .daily-double-question-edit-container > .image-input-container > div > input {
+.question-container > .daily-double-question-edit-container > .image-input-container > div > input,
+.final-jeopardy-container > .final-jeopardy-edit-container > .image-input-container > div > input {
     font-size: 30px;
     height: 35px;
     width: 85vw;
 }
 
 .question-container > .normal-question-edit-container > .image-input-container > div > img,
-.question-container > .daily-double-question-edit-container > .image-input-container > div > img {
+.question-container > .daily-double-question-edit-container > .image-input-container > div > img,
+.final-jeopardy-container > .final-jeopardy-edit-container > .image-input-container > div > img {
     max-width: 500px;
     max-height: 200px;
 }
@@ -424,14 +455,6 @@ input:checked + .slider:before {
     font-size: 30px;
 }
 
-.question-container > .normal-question-preview-container > .preview-timer-container,
-.question-container > .daily-double-question-preview-container > .preview-timer-container {
-    position: absolute;
-    bottom: 1vw;
-    left: 1vw;
-    font-size: 40px;
-} 
-
 .question-container > .normal-question-preview-container > .timer-container,
 .question-container > .daily-double-question-preview-container > .timer-container {
     position: absolute;
@@ -444,14 +467,16 @@ input:checked + .slider:before {
     color: var(--question-color);
 }
 
-.question-container > .daily-double-question-preview-container > .preview-question-container > h2 {
+.question-container > .daily-double-question-preview-container > .preview-question-container > h2,
+.final-jeopardy-container > .final-jeopardy-preview-container > .preview-question-container > h2 {
     font-size: 70px;
     opacity: 0;
     color: var(--question-color);
 }
 
 .question-container > .normal-question-preview-container > .preview-answer-container > h2,
-.question-container > .daily-double-question-preview-container > .preview-answer-container > h2 {
+.question-container > .daily-double-question-preview-container > .preview-answer-container > h2,
+.final-jeopardy-container > .final-jeopardy-preview-container > .preview-answer-container > h2 {
     font-size: 70px;
     opacity: 0;
     color: var(--answer-color);
@@ -464,14 +489,16 @@ input:checked + .slider:before {
 }
 
 .question-container > .normal-question-preview-container > .next-button-container,
-.question-container > .daily-double-question-preview-container > .next-button-container {
+.question-container > .daily-double-question-preview-container > .next-button-container,
+.final-jeopardy-container > .final-jeopardy-preview-container > .next-button-container {
     position: absolute;
     bottom: 1vw;
     right: 1vw;
 }
 
 .question-container > .normal-question-preview-container > .next-button-container > button,
-.question-container > .daily-double-question-preview-container > .next-button-container > button {
+.question-container > .daily-double-question-preview-container > .next-button-container > button,
+.final-jeopardy-container > .final-jeopardy-preview-container > .next-button-container > button {
     width: 350px;
     height: 60px;
     font-size: 30px;
@@ -488,21 +515,24 @@ input:checked + .slider:before {
 }
 
 .question-container > .normal-question-preview-container > .preview-team-viewer > .team-1,
-.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-1 {
+.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-1,
+.final-jeopardy-container > .final-jeopardy-preview-container > .preview-team-viewer > .team-1 {
     position: absolute;
     bottom: 1vw;
     left: 1vw;
 }
 
 .question-container > .normal-question-preview-container > .preview-team-viewer > .team-2,
-.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-2 {
+.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-2,
+.final-jeopardy-container > .final-jeopardy-preview-container > .preview-team-viewer > .team-2 {
     position: absolute;
     bottom: 1vw;
     left: calc(2vw + 283px);
 }
 
 .question-container > .normal-question-preview-container > .preview-team-viewer > .team-3,
-.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-3 {
+.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-3,
+.final-jeopardy-container > .final-jeopardy-preview-container > .preview-team-viewer > .team-3 {
     position: absolute;
     bottom: 1vw;
     left: calc(3vw + 283px * 2);

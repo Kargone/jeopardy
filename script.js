@@ -238,6 +238,106 @@ class Board {
             }
             document.getElementById('boards-container').appendChild(question_container);
         } else {
+            const question_info = this.questionInfos['question-1'];
+            board_container.innerHTML = `
+                <div id="final-jeopardy-edit-container" class="final-jeopardy-edit-container">
+                    <div id="${this.type}-edit-title-container">
+                        <input id="${this.type}-title-input" class="title-input" value="${this.title}" type="text"/>
+                    </div>
+                    <div class="home-button-container-final-board">
+                        <button id="${this.type}-home-button">Home</button>
+                    </div>
+                    <div class="next-board">
+                        <button id="${this.type}-next-board">Next Board</button>
+                    </div>
+                    <div class="question-input-container">
+                        <label>Q:</label>
+                        <input id="final-jeopardy-question-input" type="text" value="${question_info.question}"/>
+                    </div>
+                    <div class="answer-input-container">
+                        <label>A:</label>
+                        <input id="final-jeopardy-answer-input" type="text" value="${question_info.answer}"/>
+                    </div>
+                    <div class="image-input-container">
+                        <div>
+                            <label>Image URL:</label>
+                            <input id="final-jeopardy-image-input" type="text" value="${question_info.imageURL}"/>
+                        </div>
+                        <div>
+                            <img id="final-jeopardy-image-preview" src="${question_info.imageURL}" alt="Image Preview"/>
+                        </div>
+                    </div>
+                    <div class="preview-button-container">
+                        <button id="final-jeopardy-preview-button">Preview</button>
+                    </div>
+                </div>
+                <div id="final-jeopardy-preview-container" class="final-jeopardy-preview-container">
+                    <div id="${this.type}-preview-title-container">
+                        <h1 id="final-jeopardy-preview-title" class="board-title">${this.title}</h1>
+                    </div>
+                    <div class="wager-container">
+                        <h2>Wagers:</h2>
+                        <label>Team-1:</label>
+                        <input id="final-jeopardy-team-1-wager-input" type="number" placeholder="0 - 1000..."/>
+                        <label>Team-2:</label>
+                        <input id="final-jeopardy-team-2-wager-input" type="number" placeholder="0 - 1000..."/>
+                        <label>Team-3:</label>
+                        <input id="final-jeopardy-team-3-wager-input" type="number" placeholder="0 - 1000..."/>
+                    </div>
+                    <div class="preview-question-container">
+                        <h2 id="final-jeopardy-questions-text">Q: ${question_info.question}</h2>
+                    </div>
+                    <div class="preview-answer-container">
+                        <h2 id="final-jeopardy-answer-text">A: ${question_info.answer}</h2>
+                    </div>
+                    <div class="preview-image-container">
+                        <img id="final-jeopardy-preview-image" src="${question_info.imageURL}" alt="Image"/>
+                    </div>
+                    <div id="final-jeopardy-team-viewer" class="preview-team-viewer">
+                        <div class="team-view-container team-1">
+                            <div class="team-view-team-name">
+                                <h2>Team 1</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="final-jeopardy-team-1-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="final-jeopardy-team-1-add-button">+</button>
+                                <button class="substract-button" id="final-jeopardy-team-1-subtract-button">-</button>
+                            </div>
+                        </div>
+                        <div class="team-view-container team-2">
+                            <div class="team-view-team-name">
+                                <h2>Team 2</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="final-jeopardy-team-2-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="final-jeopardy-team-2-add-button">+</button>
+                                <button class="substract-button" id="final-jeopardy-team-2-subtract-button">-</button>
+                            </div>
+                        </div>
+                        <div class="team-view-container team-3">
+                            <div class="team-view-team-name">
+                                <h2>Team 3</h2>
+                            </div>
+                            <div class="team-view-number-container">
+                                <h2 id="final-jeopardy-team-3-points">0</h2>
+                            </div>
+                            <div class="team-view-buttons-container">
+                                <button class="add-button" id="final-jeopardy-team-3-add-button">+</button>
+                                <button class="substract-button" id="final-jeopardy-team-3-subtract-button">-</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="next-button-container">
+                        <button id="final-jeopardy-next-button">Reveal Question</button>
+                    </div>
+                </div>
+            `;
+            board_container.style.display = 'none';
+            board_container.className = 'final-jeopardy-container';
             document.getElementById('boards-container').appendChild(board_container);
         }
         this.attachListnersForEditing();
@@ -258,9 +358,9 @@ class Board {
             for (let i = 0; i < 3; i++) {
                 index = (index + 1) % 3;
                 const boards = user_data.game_boards[this_board.boardIndex].boards;
-                console.log(index)
-                console.log(Object.keys(boards)[index])
-                console.log(boards[Object.keys(boards)[index]])
+                // console.log(index)
+                // console.log(Object.keys(boards)[index])
+                // console.log(boards[Object.keys(boards)[index]])
                 if (boards[Object.keys(boards)[index]] != false) {
                     document.getElementById(`${boards[Object.keys(boards)[index]].type}-board-container`).style.display = 'block';
                     break;
@@ -348,7 +448,86 @@ class Board {
                 }
             }
         } else {
-            
+            const this_question = this.questionInfos['question-1'];
+            this_question['team-1-wager'] = 0;
+            this_question['team-2-wager'] = 0;
+            this_question['team-3-wager'] = 0;
+            this_question.revealedQuestion = false;
+            this_question.revealedAnswer = false;
+            document.getElementById(`${this_board.type}-title-input`).addEventListener('change', function(){
+                this_board.title = this.value;
+            });
+            document.getElementById(`final-jeopardy-question-input`).addEventListener('change', function() {
+                this_question.question = this.value;
+            });
+            document.getElementById(`final-jeopardy-answer-input`).addEventListener('change', function() {
+                this_question.answer = this.value;
+            });
+            document.getElementById(`final-jeopardy-image-input`).addEventListener('change', function() {
+                this_question.imageURL = this.value;
+                document.getElementById(`final-jeopardy-image-preview`).src = this_question.imageURL;
+            });
+            document.getElementById(`final-jeopardy-preview-button`).addEventListener('click', function() {
+                updatePreview();
+                document.getElementById(`final-jeopardy-edit-container`).style.display = 'none';
+                document.getElementById(`final-jeopardy-preview-container`).style.display = 'block';
+            });
+            document.getElementById(`final-jeopardy-next-button`).addEventListener('click', function() {
+                if (!this_question.revealedQuestion) {
+                    document.getElementById(`final-jeopardy-questions-text`).className = 'unfade';
+                    this.textContent = 'Reveal Answer';
+                    this_question.revealedQuestion = true;
+                } else if (!this_question.revealedAnswer) {
+                    document.getElementById(`final-jeopardy-answer-text`).className = 'unfade';
+                    this.textContent = 'Go Home';
+                    this_question.revealedAnswer = true;
+                } else {
+                    document.getElementById(`final-jeopardy-edit-container`).style.display = 'block';
+                    document.getElementById(`final-jeopardy-preview-container`).style.display = 'none';
+                }
+            });
+            for (const team_name of ['team-1', 'team-2', 'team-3']) {
+                document.getElementById(`final-jeopardy-${team_name}-add-button`).addEventListener('click', function() {
+                    document.getElementById(`final-jeopardy-${team_name}-points`).textContent = parseInt(document.getElementById(`final-jeopardy-${team_name}-points`).textContent) + this_question[`${team_name}-wager`];
+                });
+                document.getElementById(`final-jeopardy-${team_name}-subtract-button`).addEventListener('click', function() {
+                    document.getElementById(`final-jeopardy-${team_name}-points`).textContent = parseInt(document.getElementById(`final-jeopardy-${team_name}-points`).textContent) - this_question[`${team_name}-wager`];
+                });
+                document.getElementById(`final-jeopardy-${team_name}-wager-input`).addEventListener('change', function() {
+                    this_question[`${team_name}-wager`] = parseInt(this.value);
+                    updateWagerButtons();
+                });
+            }
+            function updatePreview() {
+                this_question['team-1-wager'] = 0;
+                this_question['team-2-wager'] = 0;
+                this_question['team-3-wager'] = 0;
+                this_question.revealedQuestion = false;
+                this_question.revealedAnswer = false;
+                for (const team_name of ['team-1', 'team-2', 'team-3']) {
+                    document.getElementById(`final-jeopardy-${team_name}-points`).textContent = '0';
+                    document.getElementById(`final-jeopardy-${team_name}-add-button`).textContent = `+${this_question[`${team_name}-wager`]}`;
+                    document.getElementById(`final-jeopardy-${team_name}-subtract-button`).textContent = `-${this_question[`${team_name}-wager`]}`;
+                }
+                document.getElementById(`final-jeopardy-questions-text`).textContent = `Q: ${this_question.question}`;
+                document.getElementById(`final-jeopardy-answer-text`).textContent = `A: ${this_question.answer}`;
+                document.getElementById(`final-jeopardy-preview-image`).src = this_question.imageURL;
+                document.getElementById(`final-jeopardy-questions-text`).className = '';
+                document.getElementById(`final-jeopardy-answer-text`).className = '';
+                document.getElementById(`final-jeopardy-next-button`).textContent = 'Reveal Question';
+                document.getElementById(`final-jeopardy-preview-title`).textContent = this_board.title;
+                if (this_question.imageURL === '') document.getElementById(`final-jeopardy-preview-image`).style.display = 'none';
+                    else document.getElementById(`final-jeopardy-preview-image`).style.display = 'block';
+                document.querySelector(':root').style.setProperty('--background-color', this_question.backgroundColor);
+                document.querySelector(':root').style.setProperty('--question-color', this_question.questionColor);
+                document.querySelector(':root').style.setProperty('--answer-color', this_question.answerColor);
+            }
+            function updateWagerButtons() {
+                for (const team_name of ['team-1', 'team-2', 'team-3']) {
+                    document.getElementById(`final-jeopardy-${team_name}-add-button`).textContent = `+${this_question[`${team_name}-wager`]}`;
+                    document.getElementById(`final-jeopardy-${team_name}-subtract-button`).textContent = `-${this_question[`${team_name}-wager`]}`;
+                }
+            }
         }
     }
     loadForGame(gameSettings) {
@@ -543,12 +722,11 @@ class Question {
                         <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
                     </div>
                     <div class="preview-answer-container">
-                        <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-answer-text">A:${this.answer}</h2>
+                        <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-answer-text">A: ${this.answer}</h2>
                     </div>
                     <div class="preview-image-container">
                         <img id="${this.boardType}-normal-image-${this.questionNumber}-image-preview" src="${this.imageURL}" alt="Image"/>
                     </div>
-                    <div id="${this.boardType}-normal-question-${this.questionNumber}-team-viewer" class="preview-team-viewer"></div>
                     <div class="next-button-container">
                         <button id="${this.boardType}-next-normal-${this.questionNumber}-button">Reveal Answer</button>
                     </div>
@@ -606,14 +784,11 @@ class Question {
                         <label>Wager:</label>
                         <input id="${this.boardType}-daily-double-wager-question-${this.questionNumber}-input" type="number" placeholder="0 - 1000..."/>
                     </div>
-                    <div class="preview-timer-container">
-                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-timer">Timer:${this.timerLengthDailyDouble}</h2>
-                    </div>
                     <div class="preview-question-container">
                         <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
                     </div>
                     <div class="preview-answer-container">
-                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-answer-text">A:${this.answer}</h2>
+                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-answer-text">A: ${this.answer}</h2>
                     </div>
                     <div class="preview-image-container">
                         <img id="${this.boardType}-daily-double-image-${this.questionNumber}-image-preview" src="${this.imageURL}" alt="Image"/>
@@ -981,7 +1156,7 @@ function createBoardHTML(game_board) {
     let final_board = game_board.boards['3-final-jeopardy-board'] != false ? new Board(game_board.boards['3-final-jeopardy-board'], false) : false;
     if (typeof normal_board != 'boolean') normal_board.loadForEditing();
     if (typeof double_board != 'boolean') double_board.loadForEditing();
-    // if (typeof final_board != 'boolean') final_board.loadForEditing();
+    if (typeof final_board != 'boolean') final_board.loadForEditing();
     if (typeof normal_board != 'boolean') {
         document.getElementById("normal-jeopardy-board-container").style.display = 'block';
     } else if (typeof double_board != 'boolean') {
