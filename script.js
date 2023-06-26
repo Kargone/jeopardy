@@ -1,5 +1,32 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { 
+    getDatabase,
+    child,
+    ref,
+    set,
+    get,
+    push, 
+    update
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAbFg-ax7FMV5FiNqsAE2ZNXhKB3FMQBWE",
+    authDomain: "jeopardy-a365e.firebaseapp.com",
+    databaseURL: "https://jeopardy-a365e-default-rtdb.firebaseio.com",
+    projectId: "jeopardy-a365e",
+    storageBucket: "jeopardy-a365e.appspot.com",
+    messagingSenderId: "834996600275",
+    appId: "1:834996600275:web:d8588aafc0d2b0fecac326"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbRef = ref(getDatabase(app));
+
 let user_data = {
-    'game_boards': [],
+    'game_boards': 'empty',
     'default_board': {
         'name': 'Name here...',
         'normal-jeopardy-topic-amount': 5,
@@ -27,6 +54,13 @@ let user_data = {
         'double-jeopardy-b': 0
     }
 };
+let userId;
+const boardName_boardNumber = {
+    'normal-jeopardy': '1',
+    'double-jeopardy': '2',
+    'final-jeopardy': '3'
+}
+let new_board_settings = {};
 
 // 'old-questions-clicked': true,
 // 'team-order': true,
@@ -346,9 +380,14 @@ class Board {
         this.editingText = false;
         this.showingDailyDoubles = false;
         const this_board = this;
+        console.log(user_data);
+        console.log(user_data.game_boards);
+        console.log(user_data.game_boards[this.boardIndex]);
+        let board_data_ref = user_data.game_boards[this.boardIndex].boards[`${boardName_boardNumber[this.type]}-${this.type}-board`];
         document.getElementById(`${this.type}-home-button`).addEventListener('click', function() {
             document.getElementById('boards-container').innerHTML = '';
             hideScreens('home-container');
+            console.log(user_data)
         });
         document.getElementById(`${this.type}-next-board`).addEventListener('click', function() {
             document.getElementById(`${this_board.type}-board-container`).style.display = 'none';
@@ -358,9 +397,6 @@ class Board {
             for (let i = 0; i < 3; i++) {
                 index = (index + 1) % 3;
                 const boards = user_data.game_boards[this_board.boardIndex].boards;
-                // console.log(index)
-                // console.log(Object.keys(boards)[index])
-                // console.log(boards[Object.keys(boards)[index]])
                 if (boards[Object.keys(boards)[index]] != false) {
                     document.getElementById(`${boards[Object.keys(boards)[index]].type}-board-container`).style.display = 'block';
                     break;
@@ -396,6 +432,10 @@ class Board {
                 `;
                 document.getElementById(`${this_board.type}-title-input`).addEventListener('change', function(){
                     this_board.title = this.value;
+                    board_data_ref.title = this.value;
+                    update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board`), {
+                        "title": this.value
+                    });
                 });
                 for (let topic_number = 1; topic_number <= this_board.topicAmount; topic_number++) {
                     document.getElementById(`${this_board.type}-topic-${topic_number}`).innerHTML = `
@@ -403,10 +443,18 @@ class Board {
                     `;
                     document.getElementById(`${this_board.type}-topic-${topic_number}-input`).addEventListener('change', function() {
                         this_board.topicNames[topic_number - 1] = this.value;
+                        board_data_ref['topic-names'][topic_number - 1] = this.value;
+                        update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board`), {
+                            "topic-names": board_data_ref['topic-names']
+                        });
                         for (let question_in_topic_number = 1; question_in_topic_number <= this_board.questionAmount; question_in_topic_number++) {
                             const question_number = (topic_number - 1) * this_board.questionAmount + question_in_topic_number;
                             const question_info = this_board.questionInfos[`question-${question_number}`];
                             question_info.title = `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`;
+                            board_data_ref['question-infos'][`question-${question_number}`].title = `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`;
+                            update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board/question-infos/question-${question_number}`), {
+                                "title": `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`
+                            });
                         }
                     });
                 }
@@ -420,7 +468,15 @@ class Board {
                         `;
                         document.getElementById(`${this_board.type}-board-question-${question_number}-input`).addEventListener('change', function() {
                             question_info.questionValue = parseInt(this.value);
+                            board_data_ref['question-infos'][`question-${question_number}`]['question-value'] = parseInt(this.value);
+                            update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board/question-infos/question-${question_number}`), {
+                                "question-value": this.value
+                            });
                             question_info.title = `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`;
+                            board_data_ref['question-infos'][`question-${question_number}`].title = `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`;
+                            update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board/question-infos/question-${question_number}`), {
+                                "title": `${this_board.topicNames[topic_number - 1]} $${question_info.questionValue} Question`
+                            });
                         });
                     }
                 }
@@ -456,15 +512,31 @@ class Board {
             this_question.revealedAnswer = false;
             document.getElementById(`${this_board.type}-title-input`).addEventListener('change', function(){
                 this_board.title = this.value;
+                board_data_ref.title = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board`), {
+                    "title": this.value
+                });
             });
             document.getElementById(`final-jeopardy-question-input`).addEventListener('change', function() {
                 this_question.question = this.value;
+                board_data_ref['question-infos']['question-1'].question = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board/question-infos/question-1`), {
+                    "question": this.value
+                });
             });
             document.getElementById(`final-jeopardy-answer-input`).addEventListener('change', function() {
                 this_question.answer = this.value;
+                board_data_ref['question-infos']['question-1'].answer = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board/question-infos/question-1`), {
+                    "answer": this.value
+                });
             });
             document.getElementById(`final-jeopardy-image-input`).addEventListener('change', function() {
                 this_question.imageURL = this.value;
+                board_data_ref['question-infos']['question-1']['image-URL'] = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_board.boardIndex}/boards/${boardName_boardNumber[this_board.type]}-${this_board.type}-board/question-infos/question-1`), {
+                    "image-URL": this.value
+                });
                 document.getElementById(`final-jeopardy-image-preview`).src = this_question.imageURL;
             });
             document.getElementById(`final-jeopardy-preview-button`).addEventListener('click', function() {
@@ -848,6 +920,7 @@ class Question {
         this.timerInterval = '';
         this.timerGoing = false;
         const this_question = this;
+        let question_data_ref = user_data.game_boards[this.boardIndex].boards[`${boardName_boardNumber[this.boardType]}-${this.boardType}-board`]['question-infos'][`question-${this.questionNumber}`];
         document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).addEventListener('click', function() {
             if (this_question.editingText) return;
             document.getElementById(`${this_question.boardType}-board-container`).style.display = 'none';
@@ -874,16 +947,32 @@ class Question {
                 document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
             });
             document.getElementById(`${this.boardType}-${question_type}-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
-                this_question.timerDelay = this.value;
+                this_question.timerDelay = parseInt(this.value);
+                question_data_ref['timer-delay'] = parseInt(this.value);
+                update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                    "timer-delay": parseInt(this.value)
+                });
             });
             document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-input`).addEventListener('change', function() {
                 this_question.question = this.value;
+                question_data_ref.question = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                    "question": this.value
+                });
             });
             document.getElementById(`${this.boardType}-${question_type}-answer-${this.questionNumber}-input`).addEventListener('change', function() {
                 this_question.answer = this.value;
+                question_data_ref.answer = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                    "answer": this.value
+                });
             });
             document.getElementById(`${this.boardType}-${question_type}-image-${this.questionNumber}-input`).addEventListener('change', function() {
                 this_question.imageURL = this.value;
+                question_data_ref['image-URL'] = this.value;
+                update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                    "image-URL": this.value
+                });
                 document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
             });
             document.getElementById(`${this.boardType}-preview-${question_type}-question-${this.questionNumber}-button`).addEventListener('click', function() {
@@ -916,13 +1005,25 @@ class Question {
             });
         }
         document.getElementById(`${this.boardType}-normal-timer-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.timerLengthNormal = this.value;
+            this_question.timerLengthNormal = parseInt(this.value);
+            question_data_ref['timer-length-normal'] = parseInt(this.value);
+            update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                "timer-length-normal": parseInt(this.value)
+            });
         });
         document.getElementById(`${this.boardType}-daily-double-timer-${this.questionNumber}-input`).addEventListener('change', function() {
-            this_question.timerLengthDailyDouble = this.value;
+            this_question.timerLengthDailyDouble = parseInt(this.value);
+            question_data_ref['timer-length-daily-double'] = parseInt(this.value);
+            update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                "timer-length-daily-double": parseInt(this.value)
+            });
         });
         document.getElementById(`${this.boardType}-make-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
             this_question.dailyDouble = true;
+            question_data_ref['daily-double'] = true;
+            update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                "daily-double": true
+            });
             updateQuestionEdit();
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
@@ -930,6 +1031,10 @@ class Question {
         });
         document.getElementById(`${this.boardType}-unmake-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
             this_question.dailyDouble = false;
+            question_data_ref['daily-double'] = false;
+            update(ref(db, `users/${userId}/game_boards/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                "daily-double": false
+            });
             updateQuestionEdit();
             document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-edit-container`).style.display = 'block';
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
@@ -1086,10 +1191,12 @@ function hideScreens(expect) {
     for (const screen_type of [
         'home-container',
         'create-board-container',
-        'boards-container'
+        'edit-boards-container',
     ]) {
         if (screen_type === expect) 
-            document.getElementById(screen_type).style.display = screen_type === 'home-container' ? 'inline-grid' : 'block';
+            document.getElementById(screen_type).style.display = 
+                screen_type === 'home-container' || 
+                screen_type === 'edit-boards-container' ? 'inline-grid' : 'block';
         else
             document.getElementById(screen_type).style.display = 'none';
     }
@@ -1100,7 +1207,6 @@ function copy(value) {
 }
 
 function createBoardListners() {
-    let new_board_settings = {};
     for (const board_settting_type of Object.keys(user_data.default_board)) {
         const board_setting_type_value = user_data.default_board[board_settting_type];
         new_board_settings[board_settting_type] = board_setting_type_value;
@@ -1123,6 +1229,11 @@ function createBoardListners() {
             document.getElementById(`board-${board_settting_type}-input`).addEventListener('change', function() {
                 new_board_settings[board_settting_type] = parseInt(this.value);
             });
+        } else if (board_settting_type === 'name') {
+            document.getElementById(`board-${board_settting_type}-input`).placeholder = board_setting_type_value;
+            document.getElementById(`board-${board_settting_type}-input`).addEventListener('change', function() {
+                new_board_settings[board_settting_type] = this.value;
+            });
         } else {
             document.getElementById(`board-${board_settting_type}-input`).value = board_setting_type_value;
             document.getElementById(`board-${board_settting_type}-input`).addEventListener('change', function() {
@@ -1132,24 +1243,63 @@ function createBoardListners() {
     }
     document.getElementById("finalize-board").addEventListener('click', function() {
         const settings = new_board_settings;
-        const board_index = user_data.game_boards.length;
-        user_data.game_boards.push({
-            'name': new_board_settings.name,
-            'settings': new_board_settings,
-            'file-path': 'main/',
-            'boards': {
-                '1-normal-jeopardy-board': settings['normal-jeopardy'] ? new Board(settings, true, board_index, 'normal-jeopardy').export() : false,
-                '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, board_index, 'double-jeopardy').export() : false,
-                '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, board_index, 'final-jeopardy').export() : false
-            }
+        if (typeof user_data.game_boards === 'object') {
+            const board_index = user_data.game_boards.length;
+            user_data.game_boards.push({
+                'name': new_board_settings.name,
+                'settings': new_board_settings,
+                'file-path': 'main/',
+                'boards': {
+                    '1-normal-jeopardy-board': settings['normal-jeopardy'] ? new Board(settings, true, board_index, 'normal-jeopardy').export() : false,
+                    '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, board_index, 'double-jeopardy').export() : false,
+                    '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, board_index, 'final-jeopardy').export() : false
+                }
+            });
+        } else {
+            const board_index = 0;
+            user_data.game_boards = [{
+                'name': new_board_settings.name,
+                'settings': new_board_settings,
+                'file-path': 'main/',
+                'boards': {
+                    '1-normal-jeopardy-board': settings['normal-jeopardy'] ? new Board(settings, true, board_index, 'normal-jeopardy').export() : false,
+                    '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, board_index, 'double-jeopardy').export() : false,
+                    '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, board_index, 'final-jeopardy').export() : false
+                }
+            }];
+        }
+        update(ref(db, `users/${userId}`), {
+            "game_boards": user_data.game_boards
         });
+        console.log(user_data)
         const game_boards = user_data.game_boards; 
         launchFullScreen();
         createBoardHTML(game_boards[game_boards.length - 1]);
     });
 }
 
+function updateCreateBoard() {
+    document.getElementById("board-size").checked = true;
+    for (const board_settting_type of Object.keys(user_data.default_board)) {
+        const board_setting_type_value = user_data.default_board[board_settting_type];
+        new_board_settings[board_settting_type] = board_setting_type_value;
+        if (board_settting_type.includes('key')) {
+            document.getElementById(`board-${board_settting_type}-input`).textContent = board_setting_type_value;
+        } else if (typeof board_setting_type_value === 'boolean') {
+            document.getElementById(`board-${board_settting_type}-toggle`).checked = board_setting_type_value;
+        } else if (typeof board_setting_type_value === 'number') {
+            document.getElementById(`board-${board_settting_type}-input`).value = board_setting_type_value;
+        } else if (board_settting_type === 'name') {
+            document.getElementById(`board-${board_settting_type}-input`).value = '';
+            document.getElementById(`board-${board_settting_type}-input`).placeholder = board_setting_type_value;
+        } else {
+            document.getElementById(`board-${board_settting_type}-input`).value = board_setting_type_value;
+        }
+    }
+}
+
 function createBoardHTML(game_board) {
+    document.getElementById('boards-container').innerHTML = '';
     hideScreens('boards-container');
     let normal_board = game_board.boards['1-normal-jeopardy-board'] != false ? new Board(game_board.boards['1-normal-jeopardy-board'], false) : false; 
     let double_board = game_board.boards['2-double-jeopardy-board'] != false ? new Board(game_board.boards['2-double-jeopardy-board'], false) : false;
@@ -1166,6 +1316,108 @@ function createBoardHTML(game_board) {
     }
 }
 
+function editBoardsListners() {
+    document.getElementById("edit-boards-home-button").addEventListener('click', function() {
+        hideScreens('home-container')
+    });
+}
+
+function updateEditBoards() {
+    document.getElementById('folder-main').innerHTML = '';
+    for (const game_board_key in user_data.game_boards) {
+        createBoardDisplay(
+            user_data.game_boards[game_board_key].name, 
+            parseInt(game_board_key), 
+            "12:00:00 PM", 
+            user_data.game_boards[game_board_key]['file-path']
+        );
+    }
+}
+
+function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
+    let new_board_display = document.createElement("div");
+    new_board_display.name = name;
+    new_board_display.boardIndex = boardIndex;
+    new_board_display.dateCreated = dateCreated;
+    new_board_display.filePath = filePath;
+    let folder = filePath.split('/');
+    folder = folder[folder.length - 2];
+    console.log(folder)
+    new_board_display.folder = folder;
+    new_board_display.hovered = false;
+    new_board_display.id = `board-display-${boardIndex}`;
+    new_board_display.className = 'board-displays';
+    new_board_display.innerHTML = `
+        <button class="wide-button" id="board-display-${boardIndex}-button">${name}</button>
+        <button class="edit-button" id="board-display-${boardIndex}-edit-button">Edit</button>
+        <button class="copy-button" id="board-display-${boardIndex}-copy-button">Copy</button>
+        <button class="delete-button" id="board-display-${boardIndex}-delete-button">Delete</button>
+        <button class="change-name-button" id="board-display-${boardIndex}-change-name-button">Change Name</button>
+    `;
+    if (document.getElementById(`folder-${folder}`) === null) createFolder(folder);
+    document.getElementById(`folder-${folder}`).appendChild(new_board_display);
+    document.getElementById(`board-display-${boardIndex}-edit-button`).addEventListener('click', function() {
+        const game_boards = user_data.game_boards; 
+        launchFullScreen();
+        createBoardHTML(game_boards[boardIndex]);
+    });
+    document.getElementById(`board-display-${boardIndex}-copy-button`).addEventListener('click', function() {
+        user_data.game_boards.push(copy(user_data.game_boards[boardIndex]));
+        updateGameBoardIndexs();
+        update(ref(db, `users/${userId}`), {
+            "game_boards": user_data.game_boards
+        });
+        updateEditBoards();
+    });
+    document.getElementById(`board-display-${boardIndex}-delete-button`).addEventListener('click', function() {
+        user_data.game_boards.splice(boardIndex, 1);
+        updateGameBoardIndexs();
+        update(ref(db, `users/${userId}`), {
+            "game_boards": user_data.game_boards
+        });
+        updateEditBoards();
+    });
+    document.getElementById(`board-display-${boardIndex}-change-name-button`).addEventListener('click', function() {
+        document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
+            <input id="board-display-${boardIndex}-input" type="text" value="${user_data.game_boards[boardIndex].name}"/>
+        `;
+        document.getElementById(`board-display-${boardIndex}-input`).focus();
+        document.getElementById(`board-display-${boardIndex}-input`).addEventListener('change', function() {
+            user_data.game_boards[boardIndex].name = this.value;
+            update(ref(db, `users/${userId}`), {
+                "game_boards": user_data.game_boards
+            });
+            updateEditBoards();
+        });
+    });
+    document.getElementById(`board-display-${boardIndex}`).addEventListener('mouseenter', function() {
+        this.hovered = true;
+    });
+    document.getElementById(`board-display-${boardIndex}`).addEventListener('click', function() {
+        this.hovered = false;
+    });
+    document.getElementById(`board-display-${boardIndex}`).addEventListener('mouseleave', function() {
+        this.hovered = false;
+    });
+}
+
+function createFolder(name) {
+    let new_folder = document.createElement("div");
+}
+
+function updateGameBoardIndexs() {
+    for (const game_board_key in user_data.game_boards) {
+        const game_board = user_data.game_boards[game_board_key];
+        for (const jeopardy_board_key in game_board.boards) {
+            if (game_board.boards[jeopardy_board_key] === false) continue;
+            user_data.game_boards[game_board_key].boards[jeopardy_board_key]['board-index'] = parseInt(game_board_key);
+            for (const question_key in game_board.boards[jeopardy_board_key]['question-infos']) {
+                game_board.boards[jeopardy_board_key]['question-infos'][question_key]['board-index'] = parseInt(game_board_key);
+            }
+        }
+    }
+}
+
 function launchFullScreen() {
     const element = document.documentElement;
     if (element.requestFullScreen) {
@@ -1177,7 +1429,25 @@ function launchFullScreen() {
     }
 }
 
+// update(ref(db, `users/`), {
+//     "": value
+// });
+
+export function setUserData() {
+    user_data = JSON.parse(localStorage.getItem('jeopardy-user-data'));
+}
+
+export function setUserId() {
+    userId = JSON.parse(localStorage.getItem('jeopardy-user-id'));
+}
+
 createBoardListners();
+editBoardsListners();
 document.getElementById("create-board").addEventListener('click', function() {
     hideScreens(`${this.id}-container`);
+    updateCreateBoard();
+});
+document.getElementById("edit-boards").addEventListener('click', function() {
+    hideScreens(`${this.id}-container`);
+    updateEditBoards();
 });

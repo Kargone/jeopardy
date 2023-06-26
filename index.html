@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body id="body">
+    <div id="sign-in-container">
+        <h1>Jeopardy</h1>
+        <button id="sign-in">Sign In</button>
+    </div>
     <div id="home-container">
         <h1>Jeopardy</h1>
         <button id="create-game">Create a Game</button>
@@ -29,7 +33,7 @@
                 <hr>
                 <div class="option">
                     <label for="board-size">Name:</label>
-                    <input id="board-name-input" value="Name here..." type="text"/>
+                    <input id="board-name-input" placeholder="Name here..." type="text"/>
                 </div>
                 <div class="option">
                     <label for="board-size">Normal jeopardy Topic amount:</label>
@@ -221,6 +225,15 @@
         </div> -->
     </div>
     <div id="boards-container"></div>
-    <script src="script.js"></script>
+    <div id="edit-boards-container">
+        <h1>Jeopardy</h1>
+        <p>Path: main/</p>
+        <div id="folders">
+            <div id="folder-main"></div>
+        </div>
+        <button id="edit-boards-home-button">Home</button>
+    </div>
+    <script src="firebase-sign-in.js" type="module"></script>
+    <script src="script.js" type="module"></script>
   </body>
 </html>

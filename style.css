@@ -31,13 +31,59 @@
     background: #555;
 }
 
-#home-container {
+#home-container,
+#edit-boards-container > div {
     display: inline-grid;
     /* display: none; */
 }
 
-#home-container > button {
+#sign-in-container,
+#edit-boards-container {
+    display: none;
+}
+
+#home-container > button,
+#sign-in-container > button,
+#edit-boards-container > button,
+.wide-button {
     margin: 10px 30px 10px 30px;
+}
+
+.wide-button {
+    min-width: 220px;
+}
+
+.board-displays {
+    position: relative;
+}
+
+.board-displays:hover > button {
+    display: block;
+}
+
+.edit-button,
+.copy-button,
+.delete-button,
+.change-name-button {
+    display: none;
+    position: absolute;
+    top: 10px;
+}
+
+.edit-button {
+    right: -6px;
+}
+
+.copy-button {
+    left: -68px;
+}
+
+.delete-button {
+    left: -23px;
+}
+
+.change-name-button {
+    right: -106px;
 }
 
 #create-board-container {
