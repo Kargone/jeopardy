@@ -52,7 +52,8 @@ let user_data = {
         'normal-jeopardy-b': 0,
         'double-jeopardy-m': 200,
         'double-jeopardy-b': 0
-    }
+    },
+    'folders': ['main/']
 };
 let userId;
 const boardName_boardNumber = {
@@ -61,6 +62,8 @@ const boardName_boardNumber = {
     'final-jeopardy': '3'
 }
 let new_board_settings = {};
+let created_folders = {};
+let user_path = 'main/';
 
 // 'old-questions-clicked': true,
 // 'team-order': true,
@@ -1206,6 +1209,10 @@ function copy(value) {
     return JSON.parse(JSON.stringify(value));
 }
 
+function getRandomInt(max = 1000000000) {
+    return Math.floor(Math.random() * max);
+}
+
 function createBoardListners() {
     for (const board_settting_type of Object.keys(user_data.default_board)) {
         const board_setting_type_value = user_data.default_board[board_settting_type];
@@ -1320,10 +1327,19 @@ function editBoardsListners() {
     document.getElementById("edit-boards-home-button").addEventListener('click', function() {
         hideScreens('home-container')
     });
+    document.getElementById('edit-boards-create-folder-button').addEventListener('click', function() {
+        user_data.folders.push(user_path + getRandomInt() + "/");
+        update(ref(db, `users/${userId}/`), {
+            "folders": user_data.folders
+        });
+        updateEditBoards();
+    });
 }
 
 function updateEditBoards() {
-    document.getElementById('folder-main').innerHTML = '';
+    if (user_data.game_boards === 'empty') return;
+    document.getElementById('folders').innerHTML = '<div id="folder-main"></div>';
+    created_folders = {'main': []};
     for (const game_board_key in user_data.game_boards) {
         createBoardDisplay(
             user_data.game_boards[game_board_key].name, 
@@ -1332,6 +1348,16 @@ function updateEditBoards() {
             user_data.game_boards[game_board_key]['file-path']
         );
     }
+    for (const folder_path of user_data.folders) {
+        if (folder_path === 'main/') continue;
+        let folder_name = folder_path.split('/');
+        folder_name = folder_name[folder_name.length - 2];
+        console.log(folder_name)
+        if (document.getElementById(`folder-${folder_name}`) === null) createFolder(folder_path.split('/').slice(0, folder_path.split('/').length - 2), folder_name)
+    }
+    let current_folder = user_path.split('/');
+    current_folder.pop();
+    hideFolders(current_folder[current_folder.length - 1]);
 }
 
 function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
@@ -1340,22 +1366,25 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
     new_board_display.boardIndex = boardIndex;
     new_board_display.dateCreated = dateCreated;
     new_board_display.filePath = filePath;
-    let folder = filePath.split('/');
-    folder = folder[folder.length - 2];
-    console.log(folder)
-    new_board_display.folder = folder;
+    let folders = filePath.split('/');
+    folders.pop();
+    new_board_display.folders = folders;
     new_board_display.hovered = false;
     new_board_display.id = `board-display-${boardIndex}`;
     new_board_display.className = 'board-displays';
     new_board_display.innerHTML = `
+        <img class="board-image" src="./board.png"/>
         <button class="wide-button" id="board-display-${boardIndex}-button">${name}</button>
         <button class="edit-button" id="board-display-${boardIndex}-edit-button">Edit</button>
         <button class="copy-button" id="board-display-${boardIndex}-copy-button">Copy</button>
         <button class="delete-button" id="board-display-${boardIndex}-delete-button">Delete</button>
         <button class="change-name-button" id="board-display-${boardIndex}-change-name-button">Change Name</button>
     `;
-    if (document.getElementById(`folder-${folder}`) === null) createFolder(folder);
-    document.getElementById(`folder-${folder}`).appendChild(new_board_display);
+    for (const folder of folders) {
+        if (document.getElementById(`folder-${folder}`) === null) createFolder(folders.slice(0, folders.indexOf(folder)), folder);
+        created_folders[folder].push(boardIndex);
+    }
+    document.getElementById(`folder-${folders[folders.length - 1]}`).appendChild(new_board_display);
     document.getElementById(`board-display-${boardIndex}-edit-button`).addEventListener('click', function() {
         const game_boards = user_data.game_boards; 
         launchFullScreen();
@@ -1379,7 +1408,7 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
     });
     document.getElementById(`board-display-${boardIndex}-change-name-button`).addEventListener('click', function() {
         document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
-            <input id="board-display-${boardIndex}-input" type="text" value="${user_data.game_boards[boardIndex].name}"/>
+            <input id="board-display-${boardIndex}-input" class="board-display-input" type="text" value="${user_data.game_boards[boardIndex].name}"/>
         `;
         document.getElementById(`board-display-${boardIndex}-input`).focus();
         document.getElementById(`board-display-${boardIndex}-input`).addEventListener('change', function() {
@@ -1401,8 +1430,118 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
     });
 }
 
-function createFolder(name) {
+function createFolder(path, name) {
+    console.log(path, name)
+    if (user_data.folders.indexOf(`${path.join('/')}/${name}/`) === -1) {
+        user_data.folders.push(`${path.join('/')}/${name}/`);
+        update(ref(db, `users/${userId}/`), {
+            "folders": user_data.folders
+        });
+    }
     let new_folder = document.createElement("div");
+    new_folder.id = `folder-${name}`;
+    new_folder.name = name;
+    new_folder.path = path;
+    new_folder.className = 'folder';
+    new_folder.innerHTML = `
+        <button id="folder-${name}-back" class="wide-button">Back</button>
+    `;
+    new_folder.style.display = 'none';
+    document.getElementById('folders').appendChild(new_folder);
+    document.getElementById(`folder-${name}-back`).addEventListener('click', function() {
+        hideFolders(path[path.length - 1]);
+        user_path = new_folder.path.join('/') + '/';
+        document.getElementById('path-text').textContent = `Path: ${user_path}`;
+    });
+    let new_folder_icon = document.createElement("div");
+    new_folder_icon.name = name;
+    new_folder_icon.path = path;
+    new_folder_icon.className = 'folder-icon';
+    new_folder_icon.editingName = false;
+    new_folder_icon.innerHTML = `
+        <img class="folder-image" src="./folder.png"/>
+        <button id="folder-${name}-icon" class="wide-button">${name}</button>
+        <button id="folder-${name}-delete" class="delete-button">Delete</button>
+        <button id="folder-${name}-change-name" class="change-name-button">Change Name</button>
+    `;
+    document.getElementById(`folder-${path[path.length - 1]}`).appendChild(new_folder_icon);
+    document.getElementById(`folder-${name}-icon`).addEventListener('click', function() {
+        if (new_folder_icon.editingName) return;
+        hideFolders(name);
+        user_path += `${name}/`;
+        document.getElementById('path-text').textContent = `Path: ${user_path}`;
+    });
+    document.getElementById(`folder-${name}-delete`).addEventListener('click', function() {
+        for (const board_display_object_index of created_folders[name]) {
+            const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
+            board_display_object.folders.splice(board_display_object.folders.indexOf(name), 1);
+            board_display_object.filePath = board_display_object.folders.join("/") + "/";
+            user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
+            console.log(user_data)
+            update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
+                "file-path": board_display_object.filePath
+            });
+        }
+        for (const folder_path_key in user_data.folders) {
+            const folder_path = user_data.folders[folder_path_key];
+            if (folder_path.includes(name)) {
+                let path = folder_path.split('/');
+                path.pop();
+                path.splice(path.indexOf(name), 1);
+                user_data.folders[folder_path_key] = path.join("/") + "/";
+            }
+        }
+        while (user_data.folders.lastIndexOf('main/') != 0) {
+            user_data.folders.splice(user_data.folders.lastIndexOf('main/'), 1);
+        }
+        update(ref(db, `users/${userId}/`), {
+            "folders": user_data.folders
+        });
+        updateEditBoards();
+    });
+    document.getElementById(`folder-${name}-change-name`).addEventListener('click', function() {
+        new_folder_icon.editingName = true;
+        document.getElementById(`folder-${name}-icon`).innerHTML = `
+            <input id="folder-${name}-input" class="folder-input" type="text" value="${name}"/>
+        `;
+        document.getElementById(`folder-${name}-input`).focus();
+        document.getElementById(`folder-${name}-input`).addEventListener('change', function() {
+            const new_name = this.value;
+            for (const board_display_object_index of created_folders[name]) {
+                const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
+                board_display_object.folders[board_display_object.folders.indexOf(name)] = new_name;
+                board_display_object.filePath = board_display_object.folders.join("/") + "/";
+                user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
+                console.log(user_data)
+                update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
+                    "file-path": board_display_object.filePath
+                });
+            }
+            for (const folder_path_key in user_data.folders) {
+                const folder_path = user_data.folders[folder_path_key];
+                if (folder_path.includes(name)) {
+                    let path = folder_path.split('/');
+                    path.pop();
+                    path[path.indexOf(name)] = new_name;
+                    user_data.folders[folder_path_key] = path.join("/") + "/";
+                }
+            }
+            update(ref(db, `users/${userId}/`), {
+                "folders": user_data.folders
+            });
+            updateEditBoards();
+        });
+    });
+    created_folders[name] = [];
+}
+
+function hideFolders(expect) {
+    for (const folder_name of Object.keys(created_folders)) {
+        if (folder_name === expect)
+            document.getElementById(`folder-${folder_name}`).style.display = 'inline-grid';
+        else
+            document.getElementById(`folder-${folder_name}`).style.display = 'none';
+    }
 }
 
 function updateGameBoardIndexs() {

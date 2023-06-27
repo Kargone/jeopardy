@@ -114,7 +114,8 @@ function connectToDatabase(userId) {
                     'normal-jeopardy-b': 0,
                     'double-jeopardy-m': 200,
                     'double-jeopardy-b': 0
-                }
+                },
+                'folders': ['main/']
             });
         }
         localStorage.setItem('jeopardy-user-id', JSON.stringify(userId));

@@ -53,11 +53,27 @@
     min-width: 220px;
 }
 
-.board-displays {
+.folder-input,
+.board-display-input {
+    width: 150px;
+}
+
+.board-displays,
+.folder-icon {
     position: relative;
 }
 
-.board-displays:hover > button {
+.folder-image,
+.board-image {
+    width: 25px;
+    height: 25px;
+    position: absolute;
+    top: 15px;
+    left: 36px;
+}
+
+.board-displays:hover > button,
+.folder-icon:hover > button {
     display: block;
 }
 
@@ -71,7 +87,7 @@
 }
 
 .edit-button {
-    right: -6px;
+    right: -106px;
 }
 
 .copy-button {
@@ -83,7 +99,7 @@
 }
 
 .change-name-button {
-    right: -106px;
+    right: -69px;
 }
 
 #create-board-container {
