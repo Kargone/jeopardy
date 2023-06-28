@@ -115,6 +115,7 @@ function connectToDatabase(userId) {
                     'double-jeopardy-m': 200,
                     'double-jeopardy-b': 0
                 },
+                'active_games': 'empty',
                 'folders': ['main/']
             });
         }

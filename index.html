@@ -20,7 +20,119 @@
         <button id="open-settings">Settings</button>
         <button id="log-out">Log Out</button>
     </div>
-    <div id="create-board-container">
+    <div id="select-board-container">
+        <div><h1>Jeopardy</h1></div>
+        <div><p id="select-board-path-text">Path: main/</p></div>
+        <div id="select-board-folders">
+            <div id="select-board-folder-main" class="folder"></div>
+        </div>
+        <div><button id="select-board-home-button" class="wide-button">Home</button></div>
+    </div>
+    <div id="create-game-container" class="user-options-input-container">
+        <h1>Jeopardy</h1>
+        <hr>
+        <input id="create-game-name" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="create-game-name">Game Name</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="create-game-name">Name:</label>
+                    <input id="create-game-name-input" placeholder="Name here..." type="text"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="create-game-teams" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="create-game-teams">Teams</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div id="teams-options-container"></div>
+                <!-- <div class="option">
+                    <label for="create-game-teams">Team: </label>
+                    <input id="create-game-teams-input-teamname" style="width: 159px" type="text"/>
+                    <label for="create-game-teams">Starting score:</label>
+                    <input id="create-game-teams-input-teamnumber" class="large-input" step="100" value="0" type="number"/>
+                </div> -->
+                <div>
+                    <button id="add-team-button">Add Team</button>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="create-game-boards" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="create-game-boards">Boards</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="create-game-boards">Normal Jeopardy</label>
+                    <label class="switch">
+                        <input type="checkbox" id="create-game-normal-jeopardy-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="option">
+                    <label for="create-game-boards">Double Jeopardy</label>
+                    <label class="switch">
+                        <input type="checkbox" id="create-game-double-jeopardy-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="option">
+                    <label for="create-game-boards">Final Jeopardy</label>
+                    <label class="switch">
+                        <input type="checkbox" id="create-game-final-jeopardy-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="create-game-other" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="create-game-other">Other</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="create-game-other">Team order viewer</label>
+                    <label class="switch">
+                        <input type="checkbox" id="create-game-old-questions-clicked-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="option">
+                    <label for="create-game-other">Old questions can be clicked on</label>
+                    <label class="switch">
+                        <input type="checkbox" id="create-game-team-order-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div id="create-game-button-container" class="create-button-container">
+            <button id="create-game-button" class="create-button">Create Game</button>
+        </div>
+        <div id="create-game-home-button-container" class="home-button-container">
+            <button id="create-game-home-button" class="home-button">Home</button>
+        </div>
+    </div>
+    <div id="game-container"></div>
+    <div id="create-board-container" class="user-options-input-container">
         <h1>Jeopardy</h1>
         <hr>
         <input id="board-size" class="invisible-input" type="checkbox">
@@ -193,39 +305,12 @@
             </div>
         </div>
         <hr>
-        <div id="finalize-board">
-            <button>Create Board</button>
+        <div id="finalize-board" class="create-button-container">
+            <button class="create-button">Create Board</button>
         </div>
-        <div id="create-board-home-button-container">
-            <button id="create-board-home-button">Home</button>
+        <div id="create-board-home-button-container" class="home-button-container">
+            <button id="create-board-home-button" class="home-button">Home</button>
         </div>
-    </div>
-    <div id="create-game-container">
-        <!-- <hr>
-        <input id="board-board" class="invisible-input" type="checkbox">
-        <div>
-            <div class="option-title">
-                <p>▶</p>
-                <label for="board-board">On board</h2>
-            </div>
-            <div class="options-container">
-                <hr>
-                <div class="option">
-                    <label for="board-board">Old questions can be clicked on</label>
-                    <label class="switch">
-                        <input type="checkbox" id="board-old-questions-clicked-toggle">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <div class="option">
-                    <label for="board-board">Team order viewer</label>
-                    <label class="switch">
-                        <input type="checkbox" id="board-team-order-toggle">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-            </div>
-        </div> -->
     </div>
     <div id="boards-container"></div>
     <div id="edit-boards-container">
@@ -237,7 +322,7 @@
         <div><button id="edit-boards-create-folder-button">Create Folder</button></div>
         <div><button id="edit-boards-home-button">Home</button></div>
     </div>
-    <div id="settings-container">
+    <div id="settings-container" class="user-options-input-container">
         <h1>Jeopardy</h1>
         <h2>Default Settings</h2>
         <hr>
@@ -411,8 +496,8 @@
             </div>
         </div>
         <hr>
-        <div id="settings-home-button-container">
-            <button id="settings-home-button">Home</button>
+        <div id="settings-home-button-container" class="home-button-container">
+            <button id="settings-home-button" class="home-button">Home</button>
         </div>
     </div>
     <script src="firebase-sign-in.js" type="module"></script>

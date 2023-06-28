@@ -41,13 +41,15 @@
 }
 
 #sign-in-container,
-#edit-boards-container {
+#edit-boards-container,
+#select-board-container {
     display: none;
 }
 
 #home-container > button,
 #sign-in-container > button,
 #edit-boards-container > div > button,
+#select-board-container > div > button,
 .wide-button {
     margin: 10px 30px 10px 30px;
 }
@@ -123,65 +125,57 @@
     width: 220px;
 }
 
-#create-board-container,
-#settings-container {
+.user-options-input-container{
     display: none;
     padding: 0px 20vw 0px 20vw;
     text-align: left;
 }
 
-#create-board-container > h1, button,
-#settings-container > h1, button {
+.user-options-input-container > h1, button {
     text-align: center;
 }
 
-#create-board-container > hr,
-#settings-container > hr {
+.user-options-input-container > hr {
     width: 100%;
     border: 1px white solid;
 }
 
-#create-board-container > div,
-#settings-container > div  {
+.user-options-input-container > div:not(.home-button-container):not(.create-button-container) {
     width: 400px;
 }
 
-#create-board-container > div > .option-title,
-#settings-container > div > .option-title {
+.user-options-input-container > div > .option-title {
     margin-left: 25px;
     font-size: 10px;
     position: relative;
 }
 
-#create-board-container > div > .option-title > label,
-#settings-container > div > .option-title > label {
+.user-options-input-container > div > .option-title > label {
     font-size: 16px;
 }
 
-#create-board-container > div > .option-title > p,
-#settings-container > div > .option-title > p {
+.user-options-input-container > div > .option-title > p{
     position: absolute;
     top: -8px;
     left: -25px;
 }
 
-#create-board-container > #finalize-board,
-#create-board-container > #create-board-home-button-container,
-#settings-container > #settings-home-button-container {
+.home-button-container,
+.create-button-container {
     text-align: center;
     width: 60vw;
 }
 
-#create-board-container > #finalize-board > button,
-#create-board-home-button,
-#settings-home-button {
+.home-button,
+.create-button {
     width: 150px;
     height: 35px;
     font-size: 15px;
     margin-top: 15px;
 }
 
-.option {
+.option,
+#add-team-button {
     margin-left: 25px;
 }
 

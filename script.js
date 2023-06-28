@@ -53,6 +53,7 @@ let user_data = {
         'double-jeopardy-m': 200,
         'double-jeopardy-b': 0
     },
+    'active_games': 'empty',
     'folders': ['main/']
 };
 let userId;
@@ -64,9 +65,10 @@ const boardName_boardNumber = {
 let new_board_settings = {};
 let created_folders = {};
 let user_path = 'main/';
-
-// 'old-questions-clicked': true,
-// 'team-order': true,
+let select_board_path = 'main/';
+let select_board_folders_created = [];
+let active_game_board_index = 0;
+let new_game;
 
 class Board {
     constructor(object, loadFromSettings, board_index, board_type = 'normal-jeopardy') {
@@ -1191,7 +1193,10 @@ function hideScreens(expect) {
         'home-container',
         'create-board-container',
         'edit-boards-container',
-        'settings-container'
+        'settings-container',
+        'create-game-container',
+        'select-board-container',
+        'game-container'
     ]) {
         if (screen_type === expect) 
             document.getElementById(screen_type).style.display = 
@@ -1207,6 +1212,213 @@ function copy(value) {
 
 function getRandomInt(max = 1000000000) {
     return Math.floor(Math.random() * max);
+}
+
+function createGameListners() {
+    document.getElementById("create-game-home-button").addEventListener('click', function() {
+        hideScreens('home-container');
+    });
+    document.getElementById("select-board-home-button").addEventListener('click', function() {
+        hideScreens('home-container');
+    });
+    document.getElementById("create-game-button").addEventListener('click', function() {
+        if (typeof user_data.active_games === 'object') {
+            const game_index = user_data.active_games.length;
+            new_game['game-settings'].gameIndex = game_index;
+            user_data.active_games.push(new_game);
+        } else {
+            const game_index = 0;
+            new_game['game-settings'].gameIndex = game_index;
+            user_data.active_games = [new_game];
+        }
+        update(ref(db, `users/${userId}`), {
+            "active_games": user_data.active_games
+        });
+        launchFullScreen();
+        loadGame(new_game);
+    });
+    document.getElementById("add-team-button").addEventListener('click', function() {
+        let new_team = document.createElement("div");
+        new_team.className = 'option';
+        new_team.teamName = getRandomInt();
+        new_team.teamNumber = Object.keys(new_game['game-settings'].teams).length;
+        new_team.innerHTML = `
+            <label for="create-game-teams">Team: </label>
+            <input id="create-game-team-${new_team.teamNumber}-name-input" placeholder="${new_team.teamName}" style="width: 159px" type="text"/>
+            <label for="create-game-teams">Starting score:</label>
+            <input id="create-game-team-${new_team.teamNumber}-score-input" class="large-input" step="100" value="0" type="number"/>
+        `;
+        document.getElementById("teams-options-container").appendChild(new_team);
+        new_game['game-settings'].teams.push({
+            'name': new_team.teamName,
+            'score': 0,
+            'team-number': new_team.teamNumber
+        });
+        document.getElementById(`create-game-team-${new_team.teamNumber}-name-input`).addEventListener('change', function() {
+            new_game['game-settings'].teams[new_team.teamNumber].name = this.value;
+        });
+        document.getElementById(`create-game-team-${new_team.teamNumber}-score-input`).addEventListener('click', function() {
+            new_game['game-settings'].teams[new_team.teamNumber].score = parseInt(this.value);
+            console.log(new_game);
+        });
+        document.getElementById(`create-game-team-${new_team.teamNumber}-name-input`).focus();
+    });
+}
+
+function updateSelectBoard() {
+    if (user_data.game_boards === 'empty') return hideScreens('home-container');
+    select_board_folders_created = ['main'];
+    document.getElementById('select-board-folders').innerHTML = '<div id="select-board-folder-main" class="folder"></div>';
+    for (const game_board_key in user_data.game_boards) {
+        createSelectBoardDisplay(
+            user_data.game_boards[game_board_key].name, 
+            parseInt(game_board_key), 
+            "12:00:00 PM", 
+            user_data.game_boards[game_board_key]['file-path']
+        );
+    }
+    hideSelectBoardFolders('main');
+}
+
+function createSelectBoardDisplay(name, boardIndex, dateCreated, filePath) {
+    let new_board_display = document.createElement("div");
+    new_board_display.boardIndex = boardIndex;
+    let folders = filePath.split('/');
+    folders.pop();
+    new_board_display.folders = folders;
+    new_board_display.clicked = false;
+    new_board_display.id = `select-board-display-${boardIndex}`;
+    new_board_display.className = 'board-displays';
+    new_board_display.innerHTML = `
+        <img class="board-image" src="./board.png"/>
+        <button class="wide-button" id="select-board-display-${boardIndex}-button">${name}</button>
+    `;
+    for (const folder of folders) {
+        if (document.getElementById(`select-board-folder-${folder}`) === null) createSelectBoardFolder(folders.slice(0, folders.indexOf(folder)), folder);
+    }
+    document.getElementById(`select-board-folder-${folders[folders.length - 1]}`).appendChild(new_board_display);
+    document.getElementById(`select-board-display-${boardIndex}-button`).addEventListener('click', function() {
+        if (new_board_display.clicked) {
+            hideScreens('create-game-container');
+            active_game_board_index = boardIndex;
+            updateCreateGame();
+            new_board_display.clicked = false;
+        } else {
+            new_board_display.clicked = true;
+            setTimeout(() => {
+                new_board_display.clicked = false;
+            }, 1000);
+        }
+    });
+
+}
+
+function createSelectBoardFolder(path, name) {
+    if (select_board_folders_created.indexOf(name) != -1) return;
+    select_board_folders_created.push(name);
+    if (document.getElementById(`select-board-folder-${path[path.length - 1]}`) === null) createFolder(path.slice(0, path.length - 1), path.slice(path.length - 1, path.length)[0]);
+    let new_folder = document.createElement("div");
+    new_folder.path = path;
+    new_folder.id = `select-board-folder-${name}`;
+    new_folder.className = 'folder';
+    new_folder.innerHTML = `
+        <button id="select-board-folder-${name}-back" class="wide-button">Back</button>
+    `;
+    new_folder.style.display = 'none';
+    document.getElementById('select-board-folders').appendChild(new_folder);
+    document.getElementById(`select-board-folder-${name}-back`).addEventListener('click', function() {
+        hideSelectBoardFolders(path[path.length - 1]);
+        select_board_path = new_folder.path.join('/') + '/';
+        document.getElementById('select-board-path-text').textContent = `Path: ${select_board_path}`;
+    });
+    let new_folder_icon = document.createElement("div");
+    new_folder_icon.id = `select-board-folder-${name}-icon`;
+    new_folder_icon.className = 'folder-icon';
+    new_folder_icon.innerHTML = `
+        <img class="folder-image" src="./folder.png"/>
+        <button id="select-board-folder-${name}-icon-button" class="wide-button">${name}</button>
+    `;
+    document.getElementById(`select-board-folder-${path[path.length - 1]}`).appendChild(new_folder_icon);
+    document.getElementById(`select-board-folder-${name}-icon-button`).addEventListener('click', function() {
+        hideSelectBoardFolders(name);
+        select_board_path += `${name}/`;
+        document.getElementById('select-board-path-text').textContent = `Path: ${select_board_path}`;
+    });
+}
+
+function hideSelectBoardFolders(expect) {
+    for (const folder_name of select_board_folders_created) {
+        if (folder_name === expect)
+            document.getElementById(`select-board-folder-${folder_name}`).style.display = 'block';
+        else
+            document.getElementById(`select-board-folder-${folder_name}`).style.display = 'none';
+    }
+}
+
+function updateCreateGame() {
+    document.getElementById("create-game-name").checked = true;
+    document.getElementById("create-game-teams").checked = true;
+    document.getElementById("create-game-boards").checked = true;
+    document.getElementById("create-game-other").checked = true;
+    document.getElementById("teams-options-container").innerHTML = '';
+    new_game = user_data.game_boards[active_game_board_index];
+    new_game['game-settings'] = {
+        'teams': [],
+        'name': new_game.name,
+        'normal-jeopardy': !(new_game.boards['1-normal-jeopardy-board'] === false),
+        'double-jeopardy': !(new_game.boards['1-double-jeopardy-board'] === false),
+        'final-jeopardy': !(new_game.boards['1-final-jeopardy-board'] === false),
+        'old-questions-clicked': true,
+        'team-order': true
+    };
+    for (const board_settting_type of Object.keys(new_game['game-settings'])) {
+        const board_setting_type_value = new_game['game-settings'][board_settting_type];
+        new_game['game-settings'][board_settting_type] = board_setting_type_value;
+        if (board_settting_type === 'teams') continue;
+        if (typeof board_setting_type_value === 'boolean') {
+            document.getElementById(`create-game-${board_settting_type}-toggle`).checked = board_setting_type_value;
+            document.getElementById(`create-game-${board_settting_type}-toggle`).addEventListener('click', function() {
+                new_game['game-settings'][board_settting_type] = this.checked;
+            });
+        } else if (board_settting_type === 'name') {
+            document.getElementById(`create-game-${board_settting_type}-input`).placeholder = board_setting_type_value;
+            document.getElementById(`create-game-${board_settting_type}-input`).addEventListener('change', function() {
+                new_game['game-settings'][board_settting_type] = this.value;
+            });
+        } else {
+            document.getElementById(`create-game-${board_settting_type}-input`).value = board_setting_type_value;
+            document.getElementById(`create-game-${board_settting_type}-input`).addEventListener('change', function() {
+                new_game['game-settings'][board_settting_type] = this.value;
+            });
+        }
+    }
+}
+
+function loadGame(game_info) {
+    document.getElementById('game-container').innerHTML = '';
+    hideScreens('game-container');
+    let normal_board = 
+        game_info.boards['1-normal-jeopardy-board'] != false && 
+        game_info['game-settings']['1-normal-jeopardy-board'] != false ? 
+        new Board(game_info.boards['1-normal-jeopardy-board'], false) : false; 
+    let double_board = 
+        game_info.boards['2-double-jeopardy-board'] != false && 
+        game_info['game-settings']['2-double-jeopardy-board'] != false ? 
+        new Board(game_info.boards['2-double-jeopardy-board'], false) : false;
+    let final_board = 
+        game_info.boards['3-final-jeopardy-board'] != false && 
+        game_info['game-settings']['3-final-jeopardy-board'] != false ? 
+        new Board(game_info.boards['3-final-jeopardy-board'], false) : false;
+    if (typeof normal_board != 'boolean') normal_board.loadForGame(game_info['game-settings']);
+    if (typeof double_board != 'boolean') double_board.loadForGame(game_info['game-settings']);
+    if (typeof final_board != 'boolean') final_board.loadForGame(game_info['game-settings']);
+    // if (typeof normal_board != 'boolean') {
+    //     document.getElementById("normal-jeopardy-game-container").style.display = 'block';
+    // } else if (typeof double_board != 'boolean') {
+    //     document.getElementById("double-jeopardy-game-container").style.display = 'block';
+    // } else {
+    //     document.getElementById("final-jeopardy-game-container").style.display = 'block';
+    // }
 }
 
 function createBoardListners() {
@@ -1249,7 +1461,7 @@ function createBoardListners() {
         if (typeof user_data.game_boards === 'object') {
             const board_index = user_data.game_boards.length;
             user_data.game_boards.push({
-                'name': new_board_settings.name,
+                'name': new_board_settings.name === 'Name here...' ? getRandomInt() : new_board_settings.name,
                 'settings': new_board_settings,
                 'file-path': 'main/',
                 'boards': {
@@ -1261,7 +1473,7 @@ function createBoardListners() {
         } else {
             const board_index = 0;
             user_data.game_boards = [{
-                'name': new_board_settings.name,
+                'name': new_board_settings.name === 'Name here...' ? getRandomInt() : new_board_settings.name,
                 'settings': new_board_settings,
                 'file-path': 'main/',
                 'boards': {
@@ -1801,8 +2013,15 @@ export function setUserId() {
     userId = JSON.parse(localStorage.getItem('jeopardy-user-id'));
 }
 
+createGameListners();
 createBoardListners();
 editBoardsListners();
+
+document.getElementById("create-game").addEventListener('click', function() {
+    hideScreens('select-board-container');
+    updateSelectBoard();
+});
+
 document.getElementById("create-board").addEventListener('click', function() {
     hideScreens(`${this.id}-container`);
     updateCreateBoard();
