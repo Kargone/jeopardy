@@ -33,9 +33,9 @@ let user_data = {
         'normal-jeopardy-question-amount': 5,
         'double-jeopardy-topic-amount': 5,
         'double-jeopardy-question-amount': 5,
-        'timer-delay': 1,
-        'timer-length-normal': 3,
-        'timer-length-daily-double': 5,
+        'timer-delay': 5,
+        'timer-length-normal': 30,
+        'timer-length-daily-double': 60,
         'normal-jeopardy': true,
         'double-jeopardy': true,
         'final-jeopardy': true,
@@ -383,14 +383,10 @@ class Board {
         this.editingText = false;
         this.showingDailyDoubles = false;
         const this_board = this;
-        console.log(user_data);
-        console.log(user_data.game_boards);
-        console.log(user_data.game_boards[this.boardIndex]);
         let board_data_ref = user_data.game_boards[this.boardIndex].boards[`${boardName_boardNumber[this.type]}-${this.type}-board`];
         document.getElementById(`${this.type}-home-button`).addEventListener('click', function() {
             document.getElementById('boards-container').innerHTML = '';
             hideScreens('home-container');
-            console.log(user_data)
         });
         document.getElementById(`${this.type}-next-board`).addEventListener('click', function() {
             document.getElementById(`${this_board.type}-board-container`).style.display = 'none';
@@ -1195,11 +1191,11 @@ function hideScreens(expect) {
         'home-container',
         'create-board-container',
         'edit-boards-container',
+        'settings-container'
     ]) {
         if (screen_type === expect) 
             document.getElementById(screen_type).style.display = 
-                screen_type === 'home-container' || 
-                screen_type === 'edit-boards-container' ? 'inline-grid' : 'block';
+                screen_type === 'home-container' ? 'inline-grid' : 'block';
         else
             document.getElementById(screen_type).style.display = 'none';
     }
@@ -1278,10 +1274,12 @@ function createBoardListners() {
         update(ref(db, `users/${userId}`), {
             "game_boards": user_data.game_boards
         });
-        console.log(user_data)
         const game_boards = user_data.game_boards; 
         launchFullScreen();
         createBoardHTML(game_boards[game_boards.length - 1]);
+    });
+    document.getElementById("create-board-home-button").addEventListener('click', function() {
+        hideScreens('home-container');
     });
 }
 
@@ -1338,7 +1336,7 @@ function editBoardsListners() {
 
 function updateEditBoards() {
     if (user_data.game_boards === 'empty') return;
-    document.getElementById('folders').innerHTML = '<div id="folder-main"></div>';
+    document.getElementById('folders').innerHTML = '<div id="folder-main" class="folder"></div>';
     created_folders = {'main': []};
     for (const game_board_key in user_data.game_boards) {
         createBoardDisplay(
@@ -1352,7 +1350,6 @@ function updateEditBoards() {
         if (folder_path === 'main/') continue;
         let folder_name = folder_path.split('/');
         folder_name = folder_name[folder_name.length - 2];
-        console.log(folder_name)
         if (document.getElementById(`folder-${folder_name}`) === null) createFolder(folder_path.split('/').slice(0, folder_path.split('/').length - 2), folder_name)
     }
     let current_folder = user_path.split('/');
@@ -1370,6 +1367,7 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
     folders.pop();
     new_board_display.folders = folders;
     new_board_display.hovered = false;
+    new_board_display.editingName = false;
     new_board_display.id = `board-display-${boardIndex}`;
     new_board_display.className = 'board-displays';
     new_board_display.innerHTML = `
@@ -1385,6 +1383,7 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
         created_folders[folder].push(boardIndex);
     }
     document.getElementById(`folder-${folders[folders.length - 1]}`).appendChild(new_board_display);
+    dragBoardDisplay(new_board_display);
     document.getElementById(`board-display-${boardIndex}-edit-button`).addEventListener('click', function() {
         const game_boards = user_data.game_boards; 
         launchFullScreen();
@@ -1410,28 +1409,74 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
         document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
             <input id="board-display-${boardIndex}-input" class="board-display-input" type="text" value="${user_data.game_boards[boardIndex].name}"/>
         `;
+        new_board_display.editingName = true;
         document.getElementById(`board-display-${boardIndex}-input`).focus();
         document.getElementById(`board-display-${boardIndex}-input`).addEventListener('change', function() {
             user_data.game_boards[boardIndex].name = this.value;
             update(ref(db, `users/${userId}`), {
                 "game_boards": user_data.game_boards
             });
+            new_board_display.editingName = false;
             updateEditBoards();
         });
     });
-    document.getElementById(`board-display-${boardIndex}`).addEventListener('mouseenter', function() {
-        this.hovered = true;
-    });
-    document.getElementById(`board-display-${boardIndex}`).addEventListener('click', function() {
-        this.hovered = false;
-    });
-    document.getElementById(`board-display-${boardIndex}`).addEventListener('mouseleave', function() {
-        this.hovered = false;
-    });
+}
+
+function dragBoardDisplay(elmnt) {
+    if (document.getElementById(elmnt.id + "-button")) {
+        // if present, the header is where you move the DIV from:
+        document.getElementById(elmnt.id + "-button").onmousedown = dragMouseDown;
+    } else {
+        // otherwise, move the DIV from anywhere inside the DIV:
+        elmnt.onmousedown = dragMouseDown;
+    }
+    function dragMouseDown(e) {
+        if (elmnt.editingName) return;
+        elmnt.style.position = 'absolute';
+        elmnt.style.zIndex = '2';
+        e = e || window.event;
+        e.preventDefault();
+        elmnt.style.left = (e.clientX - 140) + "px";
+        elmnt.style.top = (e.clientY - 25) + "px";
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+    }
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // set the element's new position:
+        elmnt.style.left = (e.clientX - 140) + "px";
+        elmnt.style.top = (e.clientY - 25) + "px";
+    }
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        elmnt.style.position = 'relative';
+        elmnt.style.zIndex = '1';
+        elmnt.style.top = '0px';
+        elmnt.style.left = '0px';
+        document.onmouseup = null;
+        document.onmousemove = null;
+        if (document.getElementsByClassName('hovered').length > 0) {
+            if (document.getElementsByClassName('hovered')[0].className.includes('folder')) {
+                user_data.game_boards[elmnt.boardIndex]['file-path'] += `${document.getElementsByClassName('hovered')[0].name}/`;
+                update(ref(db, `users/${userId}/game_boards/${elmnt.boardIndex}`), {
+                    "file-path": user_data.game_boards[elmnt.boardIndex]['file-path']
+                });
+                updateEditBoards();
+            } else {
+                user_data.game_boards[elmnt.boardIndex]['file-path'] = `${document.getElementsByClassName('hovered')[0].path.join('/')}/`;
+                update(ref(db, `users/${userId}/game_boards/${elmnt.boardIndex}`), {
+                    "file-path": user_data.game_boards[elmnt.boardIndex]['file-path']
+                });
+                updateEditBoards();
+            }
+        }
+    }
 }
 
 function createFolder(path, name) {
-    console.log(path, name)
+    if (document.getElementById(`folder-${path[path.length - 1]}`) === null) createFolder(path.slice(0, path.length - 1), path.slice(path.length - 1, path.length)[0]);
     if (user_data.folders.indexOf(`${path.join('/')}/${name}/`) === -1) {
         user_data.folders.push(`${path.join('/')}/${name}/`);
         update(ref(db, `users/${userId}/`), {
@@ -1448,28 +1493,52 @@ function createFolder(path, name) {
     `;
     new_folder.style.display = 'none';
     document.getElementById('folders').appendChild(new_folder);
+    document.getElementById(`folder-${name}-back`).path = path;
+    document.getElementById(`folder-${name}-back`).style.zIndex = '3';
+    document.getElementById(`folder-${name}-back`).style.position = 'relative';
     document.getElementById(`folder-${name}-back`).addEventListener('click', function() {
         hideFolders(path[path.length - 1]);
         user_path = new_folder.path.join('/') + '/';
         document.getElementById('path-text').textContent = `Path: ${user_path}`;
     });
+    document.getElementById(`folder-${name}-back`).addEventListener('mouseenter', function() {
+        this.className = 'wide-button hovered';
+    });
+    document.getElementById(`folder-${name}-back`).addEventListener('mousedown', function() {
+        this.className = 'wide-button';
+    });
+    document.getElementById(`folder-${name}-back`).addEventListener('mouseleave', function() {
+        this.className = 'wide-button';
+    });
     let new_folder_icon = document.createElement("div");
     new_folder_icon.name = name;
     new_folder_icon.path = path;
+    new_folder_icon.id = `folder-${name}-icon`;
     new_folder_icon.className = 'folder-icon';
     new_folder_icon.editingName = false;
+    new_folder_icon.clicked = false;
+    new_folder_icon.style.zIndex = '3';
     new_folder_icon.innerHTML = `
         <img class="folder-image" src="./folder.png"/>
-        <button id="folder-${name}-icon" class="wide-button">${name}</button>
+        <button id="folder-${name}-icon-button" class="wide-button">${name}</button>
         <button id="folder-${name}-delete" class="delete-button">Delete</button>
         <button id="folder-${name}-change-name" class="change-name-button">Change Name</button>
     `;
     document.getElementById(`folder-${path[path.length - 1]}`).appendChild(new_folder_icon);
-    document.getElementById(`folder-${name}-icon`).addEventListener('click', function() {
+    dragFolder(new_folder_icon);
+    document.getElementById(`folder-${name}-icon-button`).addEventListener('click', function() {
         if (new_folder_icon.editingName) return;
-        hideFolders(name);
-        user_path += `${name}/`;
-        document.getElementById('path-text').textContent = `Path: ${user_path}`;
+        if (new_folder_icon.clicked) {
+            hideFolders(name);
+            user_path += `${name}/`;
+            document.getElementById('path-text').textContent = `Path: ${user_path}`;
+            new_folder_icon.clicked = false;
+        } else {
+            new_folder_icon.clicked = true;
+            setTimeout(() => {
+                new_folder_icon.clicked = false;
+            }, 1000);
+        }
     });
     document.getElementById(`folder-${name}-delete`).addEventListener('click', function() {
         for (const board_display_object_index of created_folders[name]) {
@@ -1477,7 +1546,6 @@ function createFolder(path, name) {
             board_display_object.folders.splice(board_display_object.folders.indexOf(name), 1);
             board_display_object.filePath = board_display_object.folders.join("/") + "/";
             user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
-            console.log(user_data)
             update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
                 "file-path": board_display_object.filePath
             });
@@ -1491,9 +1559,7 @@ function createFolder(path, name) {
                 user_data.folders[folder_path_key] = path.join("/") + "/";
             }
         }
-        while (user_data.folders.lastIndexOf('main/') != 0) {
-            user_data.folders.splice(user_data.folders.lastIndexOf('main/'), 1);
-        }
+        user_data.folders = [...new Set(user_data.folders)];
         update(ref(db, `users/${userId}/`), {
             "folders": user_data.folders
         });
@@ -1501,7 +1567,7 @@ function createFolder(path, name) {
     });
     document.getElementById(`folder-${name}-change-name`).addEventListener('click', function() {
         new_folder_icon.editingName = true;
-        document.getElementById(`folder-${name}-icon`).innerHTML = `
+        document.getElementById(`folder-${name}-icon-button`).innerHTML = `
             <input id="folder-${name}-input" class="folder-input" type="text" value="${name}"/>
         `;
         document.getElementById(`folder-${name}-input`).focus();
@@ -1512,7 +1578,6 @@ function createFolder(path, name) {
                 board_display_object.folders[board_display_object.folders.indexOf(name)] = new_name;
                 board_display_object.filePath = board_display_object.folders.join("/") + "/";
                 user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
-                console.log(user_data)
                 update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
                     "file-path": board_display_object.filePath
                 });
@@ -1526,19 +1591,119 @@ function createFolder(path, name) {
                     user_data.folders[folder_path_key] = path.join("/") + "/";
                 }
             }
+            user_data.folders = [...new Set(user_data.folders)];
             update(ref(db, `users/${userId}/`), {
                 "folders": user_data.folders
             });
             updateEditBoards();
         });
     });
+    new_folder_icon.addEventListener('mouseenter', function() {
+        this.className = 'folder-icon hovered';
+    });
+    new_folder_icon.addEventListener('mousedown', function() {
+        this.className = 'folder-icon';
+    });
+    new_folder_icon.addEventListener('mouseleave', function() {
+        this.className = 'folder-icon';
+    });
     created_folders[name] = [];
+}
+
+function dragFolder(elmnt) {
+    if (document.getElementById(elmnt.id + "-button")) {
+        // if present, the header is where you move the DIV from:
+        document.getElementById(elmnt.id + "-button").onmousedown = dragMouseDown;
+    } else {
+        // otherwise, move the DIV from anywhere inside the DIV:
+        elmnt.onmousedown = dragMouseDown;
+    }
+    function dragMouseDown(e) {
+        if (elmnt.editingName) return;
+        e = e || window.event;
+        e.preventDefault();
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+    }
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // set the element's new position:
+        elmnt.style.position = 'absolute';
+        elmnt.style.zIndex = '2';
+        elmnt.style.left = (e.clientX - 140) + "px";
+        elmnt.style.top = (e.clientY - 25) + "px";
+    }
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        elmnt.style.position = 'relative';
+        elmnt.style.zIndex = '3';
+        elmnt.style.top = '0px';
+        elmnt.style.left = '0px';
+        document.onmouseup = null;
+        document.onmousemove = null;
+        if (document.getElementsByClassName('hovered').length > 0) {
+            if (document.getElementsByClassName('hovered')[0].className.includes('folder')) {
+                const new_name = document.getElementsByClassName('hovered')[0].name;
+                const name = elmnt.name;
+                for (const board_display_object_index of created_folders[name]) {
+                    const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
+                    board_display_object.folders.splice(board_display_object.folders.indexOf(name), 0, new_name);
+                    board_display_object.filePath = board_display_object.folders.join("/") + "/";
+                    user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
+                    update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
+                        "file-path": board_display_object.filePath
+                    });
+                }
+                for (const folder_path_key in user_data.folders) {
+                    const folder_path = user_data.folders[folder_path_key];
+                    if (folder_path.includes(name)) {
+                        let path = folder_path.split('/');
+                        path.pop();
+                        path.splice(path.indexOf(name), 0, new_name);
+                        user_data.folders[folder_path_key] = path.join("/") + "/";
+                    }
+                }
+                user_data.folders = [...new Set(user_data.folders)];
+                update(ref(db, `users/${userId}/`), {
+                    "folders": user_data.folders
+                });
+                updateEditBoards();
+            } else {
+                const name = elmnt.name;
+                for (const board_display_object_index of created_folders[name]) {
+                    const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
+                    board_display_object.folders.splice(board_display_object.folders.indexOf(name) - 1, 1);
+                    board_display_object.filePath = board_display_object.folders.join("/") + "/";
+                    user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
+                    update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
+                        "file-path": board_display_object.filePath
+                    });
+                }
+                for (const folder_path_key in user_data.folders) {
+                    const folder_path = user_data.folders[folder_path_key];
+                    if (folder_path.includes(name)) {
+                        let path = folder_path.split('/');
+                        path.pop();
+                        path.splice(path.indexOf(name) - 1, 1);
+                        user_data.folders[folder_path_key] = path.join("/") + "/";
+                    }
+                }
+                user_data.folders = [...new Set(user_data.folders)];
+                update(ref(db, `users/${userId}/`), {
+                    "folders": user_data.folders
+                });
+                updateEditBoards();
+            }
+        }
+    }
 }
 
 function hideFolders(expect) {
     for (const folder_name of Object.keys(created_folders)) {
         if (folder_name === expect)
-            document.getElementById(`folder-${folder_name}`).style.display = 'inline-grid';
+            document.getElementById(`folder-${folder_name}`).style.display = 'block';
         else
             document.getElementById(`folder-${folder_name}`).style.display = 'none';
     }
@@ -1568,12 +1733,68 @@ function launchFullScreen() {
     }
 }
 
+function settingsListners() {
+    for (const settting_type of Object.keys(user_data.default_board)) {
+        const setting_type_value = user_data.default_board[settting_type];
+        user_data.default_board[settting_type] = setting_type_value;
+        if (settting_type.includes('key')) {
+            document.getElementById(`settings-${settting_type}-input`).textContent = setting_type_value;
+            document.getElementById(`settings-${settting_type}-input`).addEventListener('click', function() {
+                document.addEventListener("keydown", (e) => {
+                    let pressedKey = String(e.key);
+                    user_data.default_board[settting_type] = pressedKey;
+                    document.getElementById(`settings-${settting_type}-input`).textContent = pressedKey;    
+                    update(ref(db, `users/${userId}`), {
+                        "default_board": user_data.default_board
+                    });
+                }, {'once': true});
+            });
+        } else if (typeof setting_type_value === 'boolean') {
+            document.getElementById(`settings-${settting_type}-toggle`).checked = setting_type_value;
+            document.getElementById(`settings-${settting_type}-toggle`).addEventListener('click', function() {
+                user_data.default_board[settting_type] = this.checked;
+                update(ref(db, `users/${userId}`), {
+                    "default_board": user_data.default_board
+                });
+            });
+        } else if (typeof setting_type_value === 'number') {
+            document.getElementById(`settings-${settting_type}-input`).value = setting_type_value;
+            document.getElementById(`settings-${settting_type}-input`).addEventListener('change', function() {
+                user_data.default_board[settting_type] = parseInt(this.value);
+                update(ref(db, `users/${userId}`), {
+                    "default_board": user_data.default_board
+                });
+            });
+        } else if (settting_type === 'name') {
+            document.getElementById(`settings-${settting_type}-input`).placeholder = setting_type_value;
+            document.getElementById(`settings-${settting_type}-input`).addEventListener('change', function() {
+                user_data.default_board[settting_type] = this.value;
+                update(ref(db, `users/${userId}`), {
+                    "default_board": user_data.default_board
+                });
+            });
+        } else {
+            document.getElementById(`settings-${settting_type}-input`).value = setting_type_value;
+            document.getElementById(`settings-${settting_type}-input`).addEventListener('change', function() {
+                user_data.default_board[settting_type] = this.value;
+                update(ref(db, `users/${userId}`), {
+                    "default_board": user_data.default_board
+                });
+            });
+        }
+    }
+    document.getElementById("settings-home-button").addEventListener('click', function() {
+        hideScreens('home-container');
+    });
+}
+
 // update(ref(db, `users/`), {
 //     "": value
 // });
 
 export function setUserData() {
     user_data = JSON.parse(localStorage.getItem('jeopardy-user-data'));
+    settingsListners();
 }
 
 export function setUserId() {
@@ -1586,7 +1807,18 @@ document.getElementById("create-board").addEventListener('click', function() {
     hideScreens(`${this.id}-container`);
     updateCreateBoard();
 });
+
 document.getElementById("edit-boards").addEventListener('click', function() {
     hideScreens(`${this.id}-container`);
     updateEditBoards();
+});
+
+document.getElementById("open-settings").addEventListener('click', function() {
+    hideScreens("settings-container");
+});
+
+document.getElementById("log-out").addEventListener('click', function() {
+    localStorage.removeItem('jeopardy-user-data');
+    localStorage.removeItem('jeopardy-user-cred');
+    window.location.href = "index.html";
 });

@@ -31,9 +31,12 @@
     background: #555;
 }
 
-#home-container,
-#edit-boards-container > div {
+#home-container {
     display: inline-grid;
+}
+
+#edit-boards-container > div {
+    display: block;
     /* display: none; */
 }
 
@@ -44,13 +47,13 @@
 
 #home-container > button,
 #sign-in-container > button,
-#edit-boards-container > button,
+#edit-boards-container > div > button,
 .wide-button {
     margin: 10px 30px 10px 30px;
 }
 
 .wide-button {
-    min-width: 220px;
+    width: 220px;
 }
 
 .folder-input,
@@ -69,11 +72,24 @@
     height: 25px;
     position: absolute;
     top: 15px;
-    left: 36px;
+    left: 697px;
 }
 
-.board-displays:hover > button,
-.folder-icon:hover > button {
+.folder:not(:active) > .folder-icon:hover > button:not(.wide-button) {
+    display: block;
+}
+
+.folder:active > .folder-icon:hover > .change-name-button:active,
+.folder:active > .folder-icon:hover > .delete-button:active {
+    display: block;
+}
+
+.folder-icon:active > img,
+.board-displays:active > img {
+    display: none;
+}
+
+.board-displays:hover > .wide-button:not(:active) ~ button {
     display: block;
 }
 
@@ -87,62 +103,78 @@
 }
 
 .edit-button {
-    right: -106px;
+    right: 553px;
 }
 
 .copy-button {
-    left: -68px;
+    left: 592px;
 }
 
 .delete-button {
-    left: -23px;
+    left: 637px;
 }
 
 .change-name-button {
-    right: -69px;
+    right: 590px;
 }
 
-#create-board-container {
+.folder > button,
+#edit-boards-container > div > button {
+    width: 220px;
+}
+
+#create-board-container,
+#settings-container {
     display: none;
     padding: 0px 20vw 0px 20vw;
     text-align: left;
 }
 
-#create-board-container > h1, button {
+#create-board-container > h1, button,
+#settings-container > h1, button {
     text-align: center;
 }
 
-#create-board-container > hr {
+#create-board-container > hr,
+#settings-container > hr {
     width: 100%;
     border: 1px white solid;
 }
 
-#create-board-container > div  {
+#create-board-container > div,
+#settings-container > div  {
     width: 400px;
 }
 
-#create-board-container > div > .option-title {
+#create-board-container > div > .option-title,
+#settings-container > div > .option-title {
     margin-left: 25px;
     font-size: 10px;
     position: relative;
 }
 
-#create-board-container > div > .option-title > label {
+#create-board-container > div > .option-title > label,
+#settings-container > div > .option-title > label {
     font-size: 16px;
 }
 
-#create-board-container > div > .option-title > p {
+#create-board-container > div > .option-title > p,
+#settings-container > div > .option-title > p {
     position: absolute;
     top: -8px;
     left: -25px;
 }
 
-#create-board-container > #finalize-board {
+#create-board-container > #finalize-board,
+#create-board-container > #create-board-home-button-container,
+#settings-container > #settings-home-button-container {
     text-align: center;
     width: 60vw;
 }
 
-#create-board-container > #finalize-board > button {
+#create-board-container > #finalize-board > button,
+#create-board-home-button,
+#settings-home-button {
     width: 150px;
     height: 35px;
     font-size: 15px;

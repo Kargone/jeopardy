@@ -36,7 +36,7 @@
                     <input id="board-name-input" placeholder="Name here..." type="text"/>
                 </div>
                 <div class="option">
-                    <label for="board-size">Normal jeopardy Topic amount:</label>
+                    <label for="board-size">Normal jeopardy topic amount:</label>
                     <input id="board-normal-jeopardy-topic-amount-input" class="small-input" value="5" type="number"/>
                 </div>
                 <div class="option">
@@ -196,6 +196,9 @@
         <div id="finalize-board">
             <button>Create Board</button>
         </div>
+        <div id="create-board-home-button-container">
+            <button id="create-board-home-button">Home</button>
+        </div>
     </div>
     <div id="create-game-container">
         <!-- <hr>
@@ -226,13 +229,191 @@
     </div>
     <div id="boards-container"></div>
     <div id="edit-boards-container">
-        <h1>Jeopardy</h1>
-        <p id="path-text">Path: main/</p>
+        <div><h1>Jeopardy</h1></div>
+        <div><p id="path-text">Path: main/</p></div>
         <div id="folders">
-            <div id="folder-main"></div>
+            <div id="folder-main" class="folder"></div>
         </div>
-        <button id="edit-boards-create-folder-button">Create Folder</button>
-        <button id="edit-boards-home-button">Home</button>
+        <div><button id="edit-boards-create-folder-button">Create Folder</button></div>
+        <div><button id="edit-boards-home-button">Home</button></div>
+    </div>
+    <div id="settings-container">
+        <h1>Jeopardy</h1>
+        <h2>Default Settings</h2>
+        <hr>
+        <input id="settings-size" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="settings-size">Size/Name</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="settings-size">Name:</label>
+                    <input id="settings-name-input" placeholder="Name here..." type="text"/>
+                </div>
+                <div class="option">
+                    <label for="settings-size">Normal jeopardy topic amount:</label>
+                    <input id="settings-normal-jeopardy-topic-amount-input" class="small-input" value="5" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="settings-size">Normal jeopardy questions in each topic:</label>
+                    <input id="settings-normal-jeopardy-question-amount-input" class="small-input" value="5" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="settings-size">Double jeopardy topic amount:</label>
+                    <input id="settings-double-jeopardy-topic-amount-input" class="small-input" value="5" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="settings-size">Double jeopardy questions in each topic:</label>
+                    <input id="settings-double-jeopardy-question-amount-input" class="small-input" value="5" type="number"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="settings-timer" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="settings-timer">Timer</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="settings-timer">Timer length (normal):</label>
+                    <input id="settings-timer-length-normal-input" class="large-input" value="30" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="settings-timer">Timer length (daily double):</label>
+                    <input id="settings-timer-length-daily-double-input" class="large-input" value="30" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="settings-timer">Timer delay:</label>
+                    <input id="settings-timer-delay-input" class="small-input" value="5" type="number"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="settings-boards" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="settings-boards">Boards</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="settings-boards">Normal Jeopardy</label>
+                    <label class="switch">
+                        <input type="checkbox" id="settings-normal-jeopardy-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="option">
+                    <label for="settings-boards">Double Jeopardy</label>
+                    <label class="switch">
+                        <input type="checkbox" id="settings-double-jeopardy-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="option">
+                    <label for="settings-boards">Final Jeopardy</label>
+                    <label class="switch">
+                        <input type="checkbox" id="settings-final-jeopardy-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="settings-colors" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="settings-colors">Colors</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="settings-colors">Title:</label>
+                    <input id="settings-title-color-input" class="large-input" value="#f8ff00" type="text"/>
+                </div>
+                <div class="option">
+                    <label for="settings-colors">Topics:</label>
+                    <input id="settings-topic-color-input" class="large-input" value="#ffffff" type="text"/>
+                </div>
+                <div class="option">
+                    <label for="settings-colors">Question on Board:</label>
+                    <input id="settings-question-board-color-input" class="large-input" value="#f8ff00" type="text"/>
+                </div>
+                <div class="option">
+                    <label for="settings-colors">Background:</label>
+                    <input id="settings-background-color-input" class="large-input" value="#073763" type="text"/>
+                </div>
+                <div class="option">
+                    <label for="settings-colors">Answer:</label>
+                    <input id="settings-answer-color-input" class="large-input" value="#ffffff" type="text"/>
+                </div>
+                <div class="option">
+                    <label for="settings-colors">Questions:</label>
+                    <input id="settings-question-color-input" class="large-input" value="#ffffff" type="text"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="settings-question" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="settings-question">In Question</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="settings-question">Images allowed</label>
+                    <label class="switch">
+                        <input type="checkbox" id="settings-images-allowed-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="option">
+                    <label for="settings-question">Key Pressed to reveal answer:</label>
+                    <button id="settings-key-reveal-answer-input">NA</button>
+                </div>
+                <div class="option">
+                    <label for="settings-question">Key Pressed to go home:</label>
+                    <button id="settings-key-go-home-input">NA</button>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <input id="settings-equations" class="invisible-input" type="checkbox">
+        <div>
+            <div class="option-title">
+                <p>▶</p>
+                <label for="settings-equations">Equations for Dollar Value</h2>
+            </div>
+            <div class="options-container">
+                <hr>
+                <div class="option">
+                    <label for="settings-equations">Normal Jeopardy:</label>
+                    <input id="settings-normal-jeopardy-m-input" class="large-input" value="100" type="number"/>
+                    <label for="settings-equations">x topic number +</label>
+                    <input id="settings-normal-jeopardy-b-input" class="large-input" value="0" type="number"/>
+                </div>
+                <div class="option">
+                    <label for="settings-equations">Double Jeopardy:</label>
+                    <input id="settings-double-jeopardy-m-input" class="large-input" value="100" type="number"/>
+                    <label for="settings-equations">x topic number +</label>
+                    <input id="settings-double-jeopardy-b-input" class="large-input" value="0" type="number"/>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div id="settings-home-button-container">
+            <button id="settings-home-button">Home</button>
+        </div>
     </div>
     <script src="firebase-sign-in.js" type="module"></script>
     <script src="script.js" type="module"></script>
