@@ -392,7 +392,14 @@ input:checked + .slider:before {
     left: calc(1vw + 270px);
 }
 
-.home-button-container-board > button {
+.game-home-button-container {
+    position: absolute;
+    top: 58px;
+    left: 72vw;
+}
+
+.home-button-container-board > button,
+.game-home-button-container > button {
     width: 150px;
     height: 60px;
     font-size: 30px;
@@ -408,6 +415,25 @@ input:checked + .slider:before {
     width: 150px;
     height: 60px;
     font-size: 30px;
+}
+
+.team-order-viewer {
+    position: absolute;
+    top: 1vh;
+    left: 1vw;
+    width: 30vw;
+}
+
+.team-order-viewer > .order-1 {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.team-order-viewer > .order-2 {
+    position: absolute;
+    left: 200px;
+    top: 0px;
 }
 
 .question-container {
@@ -536,8 +562,22 @@ input:checked + .slider:before {
     right: 1vw;
 }
 
+.question-container > .normal-question-preview-container > .question-home-button-container,
+.question-container > .daily-double-question-preview-container > .question-home-button-container {
+    position: absolute;
+    top: 1vw;
+    right: 1vw;
+}
+
 .question-container > .normal-question-edit-container > .home-button-container > button,
 .question-container > .daily-double-question-edit-container > .home-button-container > button {
+    width: 150px;
+    height: 60px;
+    font-size: 30px;
+}
+
+.question-container > .normal-question-preview-container > .question-home-button-container > button,
+.question-container > .daily-double-question-preview-container > .question-home-button-container > button {
     width: 150px;
     height: 60px;
     font-size: 30px;
@@ -570,6 +610,32 @@ input:checked + .slider:before {
     color: var(--answer-color);
 }
 
+.question-container > .daily-double-question-preview-container > .preview-image-container > img {
+    opacity: 0;
+    max-width: 500px;
+    max-height: 200px;
+    position: absolute;
+    top: 12vw;
+    left: 1vw;
+}
+
+.final-jeopardy-container > .final-jeopardy-preview-container > .preview-image-container > img {
+    opacity: 0;
+    max-width: 500px;
+    max-height: 200px;
+    position: absolute;
+    top: 16vw;
+    left: 1vw;
+}
+
+.question-container > .normal-question-preview-container > .preview-image-container > img {
+    max-width: 500px;
+    max-height: 200px;
+    position: absolute;
+    top: 12vw;
+    left: 1vw;
+}
+
 .question-container > .normal-question-preview-container > .preview-image-container > image,
 .question-container > .daily-double-question-preview-container > .preview-image-container > image {
     max-width: 500px;
@@ -584,9 +650,20 @@ input:checked + .slider:before {
     right: 1vw;
 }
 
+.question-container > .normal-question-preview-container > .game-next-button-container,
+.question-container > .daily-double-question-preview-container > .game-next-button-container,
+.final-jeopardy-container > .final-jeopardy-preview-container > .game-next-button-container {
+    position: absolute;
+    bottom: 13vw;
+    left: 1vw;
+}
+
 .question-container > .normal-question-preview-container > .next-button-container > button,
 .question-container > .daily-double-question-preview-container > .next-button-container > button,
-.final-jeopardy-container > .final-jeopardy-preview-container > .next-button-container > button {
+.final-jeopardy-container > .final-jeopardy-preview-container > .next-button-container > button,
+.question-container > .normal-question-preview-container > .game-next-button-container > button,
+.question-container > .daily-double-question-preview-container > .game-next-button-container > button,
+.final-jeopardy-container > .final-jeopardy-preview-container > .game-next-button-container > button {
     width: 350px;
     height: 60px;
     font-size: 30px;
@@ -602,28 +679,40 @@ input:checked + .slider:before {
     width: 280px;
 }
 
-.question-container > .normal-question-preview-container > .preview-team-viewer > .team-1,
-.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-1,
-.final-jeopardy-container > .final-jeopardy-preview-container > .preview-team-viewer > .team-1 {
+.team-1 {
     position: absolute;
     bottom: 1vw;
     left: 1vw;
 }
 
-.question-container > .normal-question-preview-container > .preview-team-viewer > .team-2,
-.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-2,
-.final-jeopardy-container > .final-jeopardy-preview-container > .preview-team-viewer > .team-2 {
+.team-2 {
     position: absolute;
     bottom: 1vw;
-    left: calc(2vw + 283px);
+    left: calc(2vw + 235px);
 }
 
-.question-container > .normal-question-preview-container > .preview-team-viewer > .team-3,
-.question-container > .daily-double-question-preview-container > .preview-team-viewer > .team-3,
-.final-jeopardy-container > .final-jeopardy-preview-container > .preview-team-viewer > .team-3 {
+.team-3 {
     position: absolute;
     bottom: 1vw;
-    left: calc(3vw + 283px * 2);
+    left: calc(3vw + 235px * 2);
+}
+
+.team-4 {
+    position: absolute;
+    bottom: 1vw;
+    left: calc(4vw + 235px * 3);
+}
+
+.team-5 {
+    position: absolute;
+    bottom: 1vw;
+    left: calc(5vw + 235px * 4);
+}
+
+.team-6 {
+    position: absolute;
+    bottom: 1vw;
+    left: calc(6vw + 235px * 5);
 }
 
 .timer-container,
@@ -639,14 +728,14 @@ input:checked + .slider:before {
 
 .timer-container > .number-container,
 .team-view-container > .team-view-number-container {
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; 
-    font-size: 50px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 40px;
 }
 
 .timer-container > .timer-number-container > h2,
 .team-view-container > .team-view-number-container > h2 {
     margin: 0px;
-    font-size: 70px;
+    font-size: 60px;
 }
 
 .team-view-container > .team-view-team-name {
@@ -658,7 +747,7 @@ input:checked + .slider:before {
 
 .team-view-container > .team-view-team-name > h2 {
     margin: 0px;
-    font-size: 50px;
+    font-size: 40px;
 }
 
 .team-view-container > .team-view-team-name > h2,
@@ -668,8 +757,8 @@ input:checked + .slider:before {
 
 .timer-container > .timer-buttons-container,
 .team-view-container > .team-view-buttons-container {
-    background-color: white; 
-    padding: 10px; 
+    background-color: white;
+    padding: 8px;
     border-radius: 10px 10px 0px 0px;
 }
 
@@ -680,22 +769,22 @@ input:checked + .slider:before {
 
 .timer-container > .timer-buttons-container > .start-stop-button,
 .team-view-container > .team-view-buttons-container > .add-button {
-    background-color: green; 
-    border: none; 
-    width: 120px; 
-    height: 40px; 
-    font-size: 30px; 
+    background-color: green;
+    border: none;
+    width: 100px;
+    height: 40px;
+    font-size: 30px;
     border-radius: 10px;
 }
 
 .timer-container > .timer-buttons-container > .reset-button,
 .team-view-container > .team-view-buttons-container > .substract-button {
-    background-color: red; 
-    border: none; 
-    width: 120px; 
-    height: 40px; 
-    font-size: 30px; 
-    border-radius: 10px; 
+    background-color: red;
+    border: none;
+    width: 100px;
+    height: 40px;
+    font-size: 30px;
+    border-radius: 10px;
     margin-left: 13px;
 }
 

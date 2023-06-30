@@ -23,7 +23,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dbRef = ref(getDatabase(app));
 
 let user_data = {
     'game_boards': 'empty',
@@ -548,6 +547,7 @@ class Board {
             document.getElementById(`final-jeopardy-next-button`).addEventListener('click', function() {
                 if (!this_question.revealedQuestion) {
                     document.getElementById(`final-jeopardy-questions-text`).className = 'unfade';
+                    document.getElementById(`final-jeopardy-preview-image`).className = 'unfade';
                     this.textContent = 'Reveal Answer';
                     this_question.revealedQuestion = true;
                 } else if (!this_question.revealedAnswer) {
@@ -604,10 +604,246 @@ class Board {
         }
     }
     loadForGame(gameSettings) {
-        
+        this.boardIndex = gameSettings.gameIndex;
+        this.teamNames = [];
+        for (const team of gameSettings['teams']) this.teamNames.push(team.name);
+        document.querySelector(':root').style.setProperty('--title-color', this.titleColor);
+        document.querySelector(':root').style.setProperty('--topic-color', this.topicColor);
+        document.querySelector(':root').style.setProperty('--question-board-color', this.questionBoardColor);
+        document.querySelector(':root').style.setProperty('--background-color', this.backgroundColor);
+        document.querySelector(':root').style.setProperty('--question-color', this.questionColor);
+        document.querySelector(':root').style.setProperty('--answer-color', this.answerColor);
+        let board_container = document.createElement("div");
+        board_container.id = `${this.type}-board-container`;
+        if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
+            board_container.innerHTML = `
+                <div id="${this.type}-title-container">
+                    <h1 class="board-title">${this.title}</h1>
+                </div>
+                <div class="team-order-viewer">
+                    ${this.createTeamOrderHTML()}
+                </div>
+                <div class="game-home-button-container">
+                    <button id="${this.type}-home-button">Home</button>
+                </div>
+                <div class="next-board">
+                    <button id="${this.type}-next-board">Next Board</button>
+                </div>
+            `;
+            // table
+            let table = '<table>';
+            let table_headings = '<tr>';
+            for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                table_headings += `<th id="${this.type}-topic-${topic_number}">${this.topicNames[topic_number - 1]}</th>`;
+            }
+            table_headings += '</tr>';
+            table += table_headings;
+            for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
+                let table_row = '<tr>';
+                for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                    const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
+                    const question_info = this.questionInfos[`question-${question_number}`];
+                    table_row += `<td id="${this.type}-board-question-${question_number}">$${question_info.questionValue}</td>`;
+                }
+                table_row += '</tr>';
+                table += table_row;
+            }
+            table += '</table>'
+            board_container.innerHTML += table;
+            document.querySelector(':root').style.setProperty('--table-heading-font-size', `${(window.innerHeight * .99 - 180) / 81}vh`);
+            document.querySelector(':root').style.setProperty('--table-element-font-size', `${(window.innerHeight * .99 - 180) / 101}vh`);
+            board_container.style.display = 'none';
+            document.getElementById('game-container').appendChild(board_container);
+            document.getElementById(`${this.type}-team-${user_data.active_games[this.boardIndex]['game-settings']['selected-team']}-selector`).style.color = 'red';
+            let question_container = document.createElement("div");
+            question_container.id = `${this.type}-questions-container`;
+            for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
+                    const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
+                    const question_info = this.questionInfos[`question-${question_number}`];
+                    question_container.innerHTML += question_info.loadForGame(this.teamNames, this.boardIndex);
+                }
+            }
+            document.getElementById('game-container').appendChild(question_container);
+        } else {
+            const question_info = this.questionInfos['question-1'];
+            board_container.innerHTML = `
+                <div id="final-jeopardy-preview-container" class="final-jeopardy-preview-container">
+                    <div id="${this.type}-preview-title-container">
+                        <h1 id="final-jeopardy-preview-title" class="board-title">${this.title}</h1>
+                    </div>
+                    <div class="wager-container">
+                        <h2>Wagers:</h2>
+                        ${this.createWagersInputHTML()}
+                    </div>
+                    <div class="preview-question-container">
+                        <h2 id="final-jeopardy-questions-text">Q: ${question_info.question}</h2>
+                    </div>
+                    <div class="preview-answer-container">
+                        <h2 id="final-jeopardy-answer-text">A: ${question_info.answer}</h2>
+                    </div>
+                    <div class="preview-image-container">
+                        <img id="final-jeopardy-preview-image" src="${question_info.imageURL}" alt="Image"/>
+                    </div>
+                    <div id="final-jeopardy-team-viewer" class="preview-team-viewer"> 
+                        ${this.createHTMLforTeams()}
+                    </div>
+                    <div class="next-button-container">
+                        <button id="final-jeopardy-next-button">Reveal Question</button>
+                    </div>
+                    <div class="home-button-container-board">
+                        <button id="final-jeopardy-home-button">Home</button>
+                    </div>
+                    <div class="next-board">
+                        <button id="final-jeopardy-next-board">Next Board</button>
+                    </div>
+                </div>
+            `;
+            board_container.style.display = 'none';
+            board_container.className = 'final-jeopardy-container';
+            document.getElementById('game-container').appendChild(board_container);
+            if (question_info.imageURL === '') document.getElementById('final-jeopardy-preview-image').style.display = 'none';
+            document.getElementById("final-jeopardy-preview-container").style.display = 'block';
+        }
+        this.attachListnersForGame();
+    }
+    createTeamOrderHTML() {
+        let returned = '<div class="order-1">';
+        for (const team_name of this.teamNames) {
+            if (this.teamNames.indexOf(team_name) === 3) returned += '</div><div class="order-2">';
+            returned += `<h2 id="${this.type}-team-${this.teamNames.indexOf(team_name)}-selector">${this.teamNames.indexOf(team_name) + 1}. ${team_name}</h2>`;
+        }
+        returned += "</div>";
+        return returned;
+    }
+    createHTMLforTeams() {
+        let returned = '';
+        for (const team_name of this.teamNames) {
+            returned += `
+            <div class="team-view-container team-${this.teamNames.indexOf(team_name) + 1}">
+                <div class="team-view-team-name">
+                    <h2>${team_name}</h2>
+                </div>
+                <div class="team-view-number-container">
+                    <h2 id="final-jeopardy-team-${team_name}-points">0</h2>
+                </div>
+                <div class="team-view-buttons-container">
+                    <button class="add-button" id="final-jeopardy-team-${team_name}-add-button">+</button>
+                    <button class="substract-button" id="final-jeopardy-team-${team_name}-subtract-button">-</button>
+                </div>
+            </div>
+            `;
+        }
+        return returned;
+    }
+    createWagersInputHTML() {
+        let returned = '';
+        for (const team_name of this.teamNames) {
+            returned += `
+                <label for="final-jeopardy-team-${team_name}-wager-input">${team_name}:</label> 
+                <input id="final-jeopardy-team-${team_name}-wager-input" class="large-input" min="0" type="number" placeholder="0"/>
+            `;
+        }
+        return returned;
     }
     attachListnersForGame() {
-        
+        const this_board = this;
+        document.getElementById(`${this.type}-home-button`).addEventListener('click', function() {
+            document.getElementById('game-container').innerHTML = '';
+            hideScreens('home-container');
+        });
+        document.getElementById(`${this.type}-next-board`).addEventListener('click', function() {
+            document.getElementById(`${this_board.type}-board-container`).style.display = 'none';
+            let index = 0;
+            if (this_board.type === 'double-jeopardy') index = 1; 
+            if (this_board.type === 'final-jeopardy') index = 2;
+            for (let i = 0; i < 3; i++) {
+                index = (index + 1) % 3;
+                const boards = user_data.active_games[this_board.boardIndex].boards;
+                if ((boards[Object.keys(boards)[index]] != false) && (user_data.active_games[this_board.boardIndex]['game-settings'][Object.keys(boards)[index]] != false)) {
+                    const board_type = boards[Object.keys(boards)[index]].type;
+                    document.getElementById(`${board_type}-board-container`).style.display = 'block';
+                    for (const board_type of ['normal-jeopardy', 'double-jeopardy']) {
+                        for (const team_name_index in this_board.teamNames) {
+                            document.getElementById(`${board_type}-team-${team_name_index}-selector`).style.color = 'yellow';
+                        }
+                        const selected_team = user_data.active_games[this_board.boardIndex]['game-settings']['selected-team'];
+                        document.getElementById(`${board_type}-team-${selected_team}-selector`).style.color = 'red';
+                    }
+                    break;
+                }
+            }
+            updatePointsFinalJeopardy();
+        });
+        if ((this.type === 'normal-jeopardy') || (this.type === 'double-jeopardy')) {
+            for (const team_name of this.teamNames) {
+                document.getElementById(`${this.type}-team-${this.teamNames.indexOf(team_name)}-selector`).addEventListener('click', function() {
+                    user_data.active_games[this_board.boardIndex]['game-settings']['selected-team'] = this_board.teamNames.indexOf(team_name);
+                    for (const team_name_index in this_board.teamNames) {
+                        document.getElementById(`${this_board.type}-team-${team_name_index}-selector`).style.color = 'yellow';
+                    }
+                    this.style.color = 'red';
+                    update(ref(db, `users/${userId}/active_games/${this_board.boardIndex}/game-settings`), {
+                        "selected-team": user_data.active_games[this_board.boardIndex]['game-settings']['selected-team']
+                    });
+                });
+            }
+            for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
+                for (let question_in_topic_number = 1; question_in_topic_number <= this.questionAmount; question_in_topic_number++) {
+                    const question_number = (topic_number - 1) * this.questionAmount + question_in_topic_number;
+                    const question_info = this.questionInfos[`question-${question_number}`];
+                    question_info.attachListnersForGame();
+                }
+            }
+        } else {
+            const this_question = this.questionInfos['question-1'];
+            for (const team_name of this_board.teamNames) this_question[`${team_name}-wager`] = 0;
+            this_question.revealedQuestion = false;
+            this_question.revealedAnswer = false;
+            document.getElementById(`final-jeopardy-next-button`).addEventListener('click', function() {
+                if (!this_question.revealedQuestion) {
+                    document.getElementById(`final-jeopardy-questions-text`).className = 'unfade';
+                    document.getElementById(`final-jeopardy-preview-image`).className = 'unfade';
+                    this.textContent = 'Reveal Answer';
+                    this_question.revealedQuestion = true;
+                } else if (!this_question.revealedAnswer) {
+                    document.getElementById(`final-jeopardy-answer-text`).className = 'unfade';
+                    this.style.display = 'none';
+                    this_question.revealedAnswer = true;
+                } 
+            });
+            for (const team_name of this.teamNames) {
+                document.getElementById(`final-jeopardy-team-${team_name}-add-button`).addEventListener('click', function() {
+                    document.getElementById(`final-jeopardy-team-${team_name}-points`).textContent = parseInt(document.getElementById(`final-jeopardy-team-${team_name}-points`).textContent) + this_question[`${team_name}-wager`];
+                    user_data.active_games[this_board.boardIndex]['game-settings']['teams'][this_board.teamNames.indexOf(team_name)].score += this_question[`${team_name}-wager`];
+                    update(ref(db, `users/${userId}/active_games/${this_board.boardIndex}/game-settings/teams/${this_board.teamNames.indexOf(team_name)}`), {
+                        "score": user_data.active_games[this_board.boardIndex]['game-settings']['teams'][this_board.teamNames.indexOf(team_name)].score
+                    });
+                });
+                document.getElementById(`final-jeopardy-team-${team_name}-subtract-button`).addEventListener('click', function() {
+                    document.getElementById(`final-jeopardy-team-${team_name}-points`).textContent = parseInt(document.getElementById(`final-jeopardy-team-${team_name}-points`).textContent) - this_question[`${team_name}-wager`];
+                    user_data.active_games[this_board.boardIndex]['game-settings']['teams'][this_board.teamNames.indexOf(team_name)].score -= this_question[`${team_name}-wager`];
+                    update(ref(db, `users/${userId}/active_games/${this_board.boardIndex}/game-settings/teams/${this_board.teamNames.indexOf(team_name)}`), {
+                        "score": user_data.active_games[this_board.boardIndex]['game-settings']['teams'][this_board.teamNames.indexOf(team_name)].score
+                    });
+                });
+                document.getElementById(`final-jeopardy-team-${team_name}-wager-input`).addEventListener('change', function() {
+                    this_question[`${team_name}-wager`] = parseInt(this.value);
+                    updateWagerButtons();
+                });
+            }
+            function updateWagerButtons() {
+                for (const team_name of this_board.teamNames) {
+                    document.getElementById(`final-jeopardy-team-${team_name}-add-button`).textContent = `+${this_question[`${team_name}-wager`]}`;
+                    document.getElementById(`final-jeopardy-team-${team_name}-subtract-button`).textContent = `-${this_question[`${team_name}-wager`]}`;
+                }
+            }
+        }
+        function updatePointsFinalJeopardy() {
+            for (const team_name of this_board.teamNames) {
+                document.getElementById(`final-jeopardy-team-${team_name}-points`).textContent = user_data.active_games[this_board.boardIndex]['game-settings']['teams'][this_board.teamNames.indexOf(team_name)]['score'];
+            }
+        }
     }
     exportQuestionInfos() {
         let exported_question_infos = {};
@@ -669,6 +905,7 @@ class Question {
         this.timerLengthDailyDouble = object.timer_length_daily_double;
         this.dailyDouble = false;
         this.boardIndex = object.board_index;
+        this.faded = false;
         this.imageURL = '';
         this.question = 'Enter question here';
         this.answer = 'Enter answer here';
@@ -686,6 +923,7 @@ class Question {
         this.keyGoHome = question_export['key-go-home'];
         this.topicNumber = question_export['topic-number'];
         this.questionInTopicNumber = question_export['question-in-topic-number'];
+        this.faded = question_export['faded'];
         this.imageURL = question_export['image-URL'];
         this.question = question_export['question'];
         this.answer = question_export['answer'];
@@ -1156,11 +1394,370 @@ class Question {
                 else document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-timer-text`).textContent = `${mintues}:${seconds}`;
         }
     }
-    loadForGame() {
-        
+    loadForGame(team_names, gameIndex) {
+        this.teamNames = team_names;
+        this.boardIndex = gameIndex;
+        if (this.faded) document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).className = 'already-faded';
+        if (this.dailyDouble) {
+            return `
+                <div id="${this.boardType}-question-${this.questionNumber}-container" class="question-container">
+                    <div id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-container" class="daily-double-question-preview-container">
+                        <h1 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-title">Daily double!</h1>
+                        <div class="timer-container">
+                            <div class="timer-number-container">
+                                <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-timer-text">01:00</h2>
+                            </div>
+                            <div class="timer-buttons-container">
+                                <button class="start-stop-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button">Start</button>
+                                <button class="reset-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-reset-button">Reset</button>
+                            </div>
+                        </div>
+                        <div class="wager-container">
+                            <label for="${this.boardType}-daily-double-wager-question-${this.questionNumber}-input">Wager:</label>
+                            <input id="${this.boardType}-daily-double-wager-question-${this.questionNumber}-input" type="number" placeholder="0 - 1000..."/>
+                        </div>
+                        <div class="preview-question-container">
+                            <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
+                        </div>
+                        <div class="preview-answer-container">
+                            <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-preview-answer-text">A: ${this.answer}</h2>
+                        </div>
+                        <div class="preview-image-container">
+                            <img id="${this.boardType}-daily-double-image-${this.questionNumber}-image-preview" src="${this.imageURL}" alt="Image"/>
+                        </div>
+                        <div class="game-next-button-container">
+                            <button id="${this.boardType}-next-daily-double-${this.questionNumber}-button">Reveal Question</button>
+                        </div>
+                        <div class="question-home-button-container">
+                            <button id="${this.boardType}-home-daily-double-${this.questionNumber}-button">Board</button>
+                        </div>
+                        <div id="${this.boardType}-daily-double-question-${this.questionNumber}-team-viewer" class="preview-team-viewer">
+                            ${this.createHTMLforTeams()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div id="${this.boardType}-question-${this.questionNumber}-container" class="question-container">
+                    <div id="${this.boardType}-normal-question-${this.questionNumber}-preview-container" class="normal-question-preview-container">
+                        <h1 id="${this.boardType}-normal-question-${this.questionNumber}-preview-title">${this.title}</h1>
+                        <div class="timer-container">
+                            <div class="timer-number-container">
+                                <h2 id="${this.boardType}-normal-question-${this.questionNumber}-timer-text">00:30</h2>
+                            </div>
+                            <div class="timer-buttons-container">
+                                <button class="start-stop-button" id="${this.boardType}-normal-question-${this.questionNumber}-start-stop-button">Start</button>
+                                <button class="reset-button" id="${this.boardType}-normal-question-${this.questionNumber}-reset-button">Reset</button>
+                            </div>
+                        </div>
+                        <div class="preview-question-container">
+                            <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-questions-text">Q: ${this.question}</h2>
+                        </div>
+                        <div class="preview-answer-container">
+                            <h2 id="${this.boardType}-normal-question-${this.questionNumber}-preview-answer-text">A: ${this.answer}</h2>
+                        </div>
+                        <div class="preview-image-container">
+                            <img id="${this.boardType}-normal-image-${this.questionNumber}-image-preview" src="${this.imageURL}" alt="Image"/>
+                        </div>
+                        <div class="game-next-button-container">
+                            <button id="${this.boardType}-next-normal-${this.questionNumber}-button">Reveal Answer</button>
+                        </div>
+                        <div class="question-home-button-container">
+                            <button id="${this.boardType}-home-normal-${this.questionNumber}-button">Board</button>
+                        </div>
+                        <div id="${this.boardType}-normal-question-${this.questionNumber}-team-viewer" class="preview-team-viewer">
+                            ${this.createHTMLforTeams()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    createHTMLforTeams() {
+        let returned = '';
+        if (this.dailyDouble) {
+            for (const team_name of this.teamNames) {
+                returned += `
+                <div id="${this.boardType}-daily-double-question-${this.questionNumber}-${team_name}-container" class="team-view-container team-${this.teamNames.indexOf(team_name) + 1}">
+                    <div class="team-view-team-name">
+                        <h2>${team_name}</h2>
+                    </div>
+                    <div class="team-view-number-container">
+                        <h2 id="${this.boardType}-daily-double-question-${this.questionNumber}-${team_name}-points">0</h2>
+                    </div>
+                    <div class="team-view-buttons-container">
+                        <button class="add-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-${team_name}-add-button">+</button>
+                        <button class="substract-button" id="${this.boardType}-daily-double-question-${this.questionNumber}-${team_name}-subtract-button">-</button>
+                    </div>
+                </div>
+                `;
+            }
+        } else {
+            for (const team_name of this.teamNames) {
+                returned += `
+                <div id="${this.boardType}-normal-question-${this.questionNumber}-${team_name}-container" class="team-view-container team-${this.teamNames.indexOf(team_name) + 1}">
+                    <div class="team-view-team-name">
+                        <h2>${team_name}</h2>
+                    </div>
+                    <div class="team-view-number-container">
+                        <h2 id="${this.boardType}-normal-question-${this.questionNumber}-${team_name}-points">0</h2>
+                    </div>
+                    <div class="team-view-buttons-container">
+                        <button class="add-button" id="${this.boardType}-normal-question-${this.questionNumber}-${team_name}-add-button">+</button>
+                        <button class="substract-button" id="${this.boardType}-normal-question-${this.questionNumber}-${team_name}-subtract-button">-</button>
+                    </div>
+                </div>
+                `;
+            }
+        }
+        return returned;
     }
     attachListnersForGame() {
-
+        this.revealedQuestion = false;
+        this.revealedAnswer = false;
+        this.secondsLeft = copy(this.timerLengthNormal);
+        this.wager = 0;
+        this.timerInterval = '';
+        this.timerGoing = false;
+        const this_question = this;
+        let question_data_ref = user_data.active_games[this.boardIndex].boards[`${boardName_boardNumber[this.boardType]}-${this.boardType}-board`]['question-infos'][`question-${this.questionNumber}`];
+        document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).addEventListener('click', function() {
+            for (const object of document.getElementsByClassName('fade')) {
+                if (!object.id.includes('board-question')) continue;
+                object.className = 'already-faded';
+            }
+            if (this_question.faded && !(user_data.active_games[this_question.boardIndex]['game-settings']['old-questions-clicked'])) return;
+            document.getElementById(`${this_question.boardType}-board-container`).style.display = 'none';
+            document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'block';
+            if (this_question.dailyDouble) {
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
+            } else {
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
+            }
+            this.className = 'fade';
+            this_question.faded = true;
+            question_data_ref.faded = true;
+            update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
+                "faded": true
+            });
+            updateQuestionEdit();
+        });
+        if (this.dailyDouble) {
+            if (this.imageURL === '') document.getElementById(`${this.boardType}-daily-double-image-${this.questionNumber}-image-preview`).style.display = 'none';
+            document.getElementById(`${this.boardType}-home-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
+                document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+                document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                this_question.updateSelectedTeam();
+            });
+            document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
+                if (this_question.timerGoing) {
+                    this.textContent = 'Start';
+                    this_question.timerGoing = false;
+                    clearInterval(this_question.timerInterval);
+                } else {
+                    if (this_question.secondsLeft <= 0) return;
+                    this.textContent = 'Stop';
+                    this_question.timerGoing = true;
+                    this_question.timerInterval = setInterval(() => {
+                        if (document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`) === null) return clearInterval(this_question.timerInterval);
+                        if (this_question.secondsLeft <= 0) {
+                            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                            clearInterval(this_question.timerInterval);
+                        }
+                        this_question.secondsLeft--;
+                        updateTimer();
+                        if (document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`) === null) return clearInterval(this_question.timerInterval);
+                        if (this_question.secondsLeft <= 0) {
+                            document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                            clearInterval(this_question.timerInterval);
+                        }
+                    }, 1000);
+                }
+            });
+            document.getElementById(`${this.boardType}-daily-double-wager-question-${this.questionNumber}-input`).addEventListener('change', function() {
+                this_question.wager = parseInt(this.value);
+                for (const team_name of this_question.teamNames) {
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-add-button`).textContent = `+${this_question.wager}`;
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-subtract-button`).textContent = `-${this_question.wager}`;
+                }
+            });
+            document.getElementById(`${this.boardType}-next-daily-double-${this.questionNumber}-button`).addEventListener('click', function() {
+                if (!this_question.revealedQuestion) {
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = 'unfade';
+                    document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).className = 'unfade';
+                    this.textContent = 'Reveal Answer';
+                    this_question.revealedQuestion = true;
+                    setTimeout(() => {
+                        document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).click();
+                    }, 1000 * this_question.timerDelay);
+                } else if (!this_question.revealedAnswer) {
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
+                    this.textContent = 'Board';
+                    this_question.timerGoing = false;
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                    clearInterval(this_question.timerInterval);
+                    this_question.revealedAnswer = true;
+                } else {
+                    this_question.updateSelectedTeam();
+                    document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+                    document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                }
+            });
+            document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-reset-button`).addEventListener('click', function() {
+                clearInterval(this_question.timerInterval);
+                this_question.timerGoing = false;
+                this_question.secondsLeft = copy(this_question.timerLengthDailyDouble);
+                updateTimer();
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+            });
+            for (const team_name of this.teamNames) {
+                document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-${team_name}-add-button`).addEventListener('click', function() {
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-points`).textContent) + this_question.wager;
+                    user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score += this_question.wager;
+                    update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/game-settings/teams/${this_question.teamNames.indexOf(team_name)}`), {
+                        "score": user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score
+                    });
+                });
+                document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-${team_name}-subtract-button`).addEventListener('click', function() {
+                    document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-${team_name}-points`).textContent) - this_question.wager;
+                    user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score -= this_question.wager;
+                    update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/game-settings/teams/${this_question.teamNames.indexOf(team_name)}`), {
+                        "score": user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score
+                    });
+                });
+            }
+        } else {
+            if (this.imageURL === '') document.getElementById(`${this.boardType}-normal-image-${this.questionNumber}-image-preview`).style.display = 'none';
+            document.getElementById(`${this.boardType}-home-normal-${this.questionNumber}-button`).addEventListener('click', function() {
+                document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+                document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                this_question.updateSelectedTeam();
+            });
+            document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
+                if (this_question.timerGoing) {
+                    this.textContent = 'Start';
+                    this_question.timerGoing = false;
+                    clearInterval(this_question.timerInterval);
+                } else {
+                    if (this_question.secondsLeft <= 0) return;
+                    this.textContent = 'Stop';
+                    this_question.timerGoing = true;
+                    this_question.timerInterval = setInterval(() => {
+                        if (document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`) === null) return clearInterval(this_question.timerInterval);
+                        if (this_question.secondsLeft <= 0) {
+                            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                            clearInterval(this_question.timerInterval);
+                        }
+                        this_question.secondsLeft--;
+                        updateTimer();
+                        if (document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`) === null) return clearInterval(this_question.timerInterval);
+                        if (this_question.secondsLeft <= 0) {
+                            document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                            clearInterval(this_question.timerInterval);
+                        }
+                    }, 1000);
+                }
+            });
+            document.getElementById(`${this.boardType}-next-normal-${this.questionNumber}-button`).addEventListener('click', function() {
+                if (this_question.revealedAnswer) {
+                    document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
+                    document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
+                    document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                    this_question.updateSelectedTeam();
+                }
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
+                this.textContent = 'Board';
+                this_question.timerGoing = false;
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+                clearInterval(this_question.timerInterval);
+                this_question.revealedAnswer = true;
+            });
+            document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-reset-button`).addEventListener('click', function() {
+                clearInterval(this_question.timerInterval);
+                this_question.timerGoing = false;
+                this_question.secondsLeft = copy(this_question.timerLengthNormal);
+                updateTimer();
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+            });
+            for (const team_name of this.teamNames) {
+                document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-${team_name}-add-button`).addEventListener('click', function() {
+                    document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-${team_name}-points`).textContent) + this_question.wager;
+                    user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score += this_question.wager;
+                    update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/game-settings/teams/${this_question.teamNames.indexOf(team_name)}`), {
+                        "score": user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score
+                    });
+                });
+                document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-${team_name}-subtract-button`).addEventListener('click', function() {
+                    document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-${team_name}-points`).textContent) - this_question.wager;
+                    user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score -= this_question.wager;
+                    update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/game-settings/teams/${this_question.teamNames.indexOf(team_name)}`), {
+                        "score": user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score
+                    });
+                });
+            }
+        }
+        function updateQuestionEdit() {
+            clearInterval(this_question.timerInterval);
+            if (this_question.dailyDouble) {
+                this_question.wager = 0;
+                this_question.secondsLeft = copy(this_question.timerLengthDailyDouble);
+                document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-questions-text`).className = '';
+                document.getElementById(`${this_question.boardType}-daily-double-image-${this_question.questionNumber}-image-preview`).className = '';
+                document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).textContent = 'Reveal Question';
+            } else {
+                this_question.wager = copy(this_question.questionValue);
+                this_question.secondsLeft = copy(this_question.timerLengthNormal);
+                document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).textContent = 'Reveal Answer';
+            }
+            const question_type = this_question.dailyDouble ? 'daily-double' : 'normal';
+            for (const team_name of this_question.teamNames) {
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent = 
+                    user_data.active_games[this_question.boardIndex]['game-settings']['teams'][this_question.teamNames.indexOf(team_name)].score;
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-add-button`).textContent = `+${this_question.wager}`;
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-subtract-button`).textContent = `-${this_question.wager}`;
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-container`).style.borderColor ='black';
+            }
+            document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
+            document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-preview-answer-text`).className = '';
+            const selected_team = this_question.teamNames[user_data.active_games[this_question.boardIndex]['game-settings']['selected-team']];
+            document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${selected_team}-container`).style.borderColor ='red';
+            updateTimer();
+            if (!this_question.dailyDouble) setTimeout(() => {
+                document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-start-stop-button`).click();
+            }, this_question.timerDelay * 1000);
+            document.querySelector(':root').style.setProperty('--background-color', this_question.backgroundColor);
+            document.querySelector(':root').style.setProperty('--question-color', this_question.questionColor);
+            document.querySelector(':root').style.setProperty('--answer-color', this_question.answerColor);
+            this_question.revealedAnswer = false;
+            this_question.revealedQuestion = false;
+            this_question.timerGoing = false;
+        }
+        function updateTimer() {
+            let mintues = Math.floor(this_question.secondsLeft / 60);
+            let seconds = Math.floor(this_question.secondsLeft - mintues * 60);
+            if (seconds < 0) seconds = 0;
+            mintues = mintues >= 10 ? `${mintues}` : `0${mintues}`;
+            seconds = seconds >= 10 ? `${seconds}` : `0${seconds}`;
+            if ((document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-timer-text`) === null) &&
+            (document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-timer-text`) === null)) return;
+            if (this_question.dailyDouble) document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-timer-text`).textContent = `${mintues}:${seconds}`;
+                else document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-timer-text`).textContent = `${mintues}:${seconds}`;
+        }
+    }
+    updateSelectedTeam() {
+        user_data.active_games[this.boardIndex]['game-settings']['selected-team']++;
+        user_data.active_games[this.boardIndex]['game-settings']['selected-team'] %= this.teamNames.length;
+        update(ref(db, `users/${userId}/active_games/${this.boardIndex}/game-settings/`), {
+            "selected-team": user_data.active_games[this.boardIndex]['game-settings']['selected-team']
+        });
+        for (const team_name_index in this.teamNames) {
+            document.getElementById(`team-${team_name_index}-selector`).style.color = 'yellow';
+        }
+        document.getElementById(`team-${user_data.active_games[this.boardIndex]['game-settings']['selected-team']}-selector`).style.color = 'red';
     }
     export() {
         return {
@@ -1175,6 +1772,7 @@ class Question {
             'key-go-home': this.keyGoHome,
             'topic-number': this.topicNumber,
             'question-in-topic-number': this.questionInTopicNumber,
+            'faded': this.faded,
             'image-URL': this.imageURL,
             'question': this.question,
             'answer': this.answer,
@@ -1222,14 +1820,15 @@ function createGameListners() {
         hideScreens('home-container');
     });
     document.getElementById("create-game-button").addEventListener('click', function() {
+        if (Object.keys(new_game['game-settings'].teams).length < 2) return;
         if (typeof user_data.active_games === 'object') {
             const game_index = user_data.active_games.length;
             new_game['game-settings'].gameIndex = game_index;
-            user_data.active_games.push(new_game);
+            user_data.active_games.push(copy(new_game));
         } else {
             const game_index = 0;
             new_game['game-settings'].gameIndex = game_index;
-            user_data.active_games = [new_game];
+            user_data.active_games = [copy(new_game)];
         }
         update(ref(db, `users/${userId}`), {
             "active_games": user_data.active_games
@@ -1249,11 +1848,11 @@ function createGameListners() {
             <input id="create-game-team-${new_team.teamNumber}-score-input" class="large-input" step="100" value="0" type="number"/>
         `;
         document.getElementById("teams-options-container").appendChild(new_team);
-        new_game['game-settings'].teams.push({
+        new_game['game-settings'].teams.push(copy({
             'name': new_team.teamName,
             'score': 0,
             'team-number': new_team.teamNumber
-        });
+        }));
         document.getElementById(`create-game-team-${new_team.teamNumber}-name-input`).addEventListener('change', function() {
             new_game['game-settings'].teams[new_team.teamNumber].name = this.value;
         });
@@ -1364,6 +1963,7 @@ function updateCreateGame() {
     new_game = user_data.game_boards[active_game_board_index];
     new_game['game-settings'] = {
         'teams': [],
+        'selected-team': 0,
         'name': new_game.name,
         'normal-jeopardy': !(new_game.boards['1-normal-jeopardy-board'] === false),
         'double-jeopardy': !(new_game.boards['1-double-jeopardy-board'] === false),
@@ -1374,7 +1974,7 @@ function updateCreateGame() {
     for (const board_settting_type of Object.keys(new_game['game-settings'])) {
         const board_setting_type_value = new_game['game-settings'][board_settting_type];
         new_game['game-settings'][board_settting_type] = board_setting_type_value;
-        if (board_settting_type === 'teams') continue;
+        if ((board_settting_type === 'teams') || (board_settting_type === 'selected-team')) continue;
         if (typeof board_setting_type_value === 'boolean') {
             document.getElementById(`create-game-${board_settting_type}-toggle`).checked = board_setting_type_value;
             document.getElementById(`create-game-${board_settting_type}-toggle`).addEventListener('click', function() {
@@ -1396,6 +1996,7 @@ function updateCreateGame() {
 
 function loadGame(game_info) {
     document.getElementById('game-container').innerHTML = '';
+    document.getElementById('boards-container').innerHTML = '';
     hideScreens('game-container');
     let normal_board = 
         game_info.boards['1-normal-jeopardy-board'] != false && 
@@ -1412,13 +2013,13 @@ function loadGame(game_info) {
     if (typeof normal_board != 'boolean') normal_board.loadForGame(game_info['game-settings']);
     if (typeof double_board != 'boolean') double_board.loadForGame(game_info['game-settings']);
     if (typeof final_board != 'boolean') final_board.loadForGame(game_info['game-settings']);
-    // if (typeof normal_board != 'boolean') {
-    //     document.getElementById("normal-jeopardy-game-container").style.display = 'block';
-    // } else if (typeof double_board != 'boolean') {
-    //     document.getElementById("double-jeopardy-game-container").style.display = 'block';
-    // } else {
-    //     document.getElementById("final-jeopardy-game-container").style.display = 'block';
-    // }
+    if (typeof normal_board != 'boolean') {
+        document.getElementById("normal-jeopardy-board-container").style.display = 'block';
+    } else if (typeof double_board != 'boolean') {
+        document.getElementById("double-jeopardy-board-container").style.display = 'block';
+    } else {
+        document.getElementById("final-jeopardy-board-container").style.display = 'block';
+    }
 }
 
 function createBoardListners() {
@@ -1460,7 +2061,7 @@ function createBoardListners() {
         const settings = new_board_settings;
         if (typeof user_data.game_boards === 'object') {
             const board_index = user_data.game_boards.length;
-            user_data.game_boards.push({
+            user_data.game_boards.push(copy({
                 'name': new_board_settings.name === 'Name here...' ? getRandomInt() : new_board_settings.name,
                 'settings': new_board_settings,
                 'file-path': 'main/',
@@ -1469,10 +2070,10 @@ function createBoardListners() {
                     '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, board_index, 'double-jeopardy').export() : false,
                     '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, board_index, 'final-jeopardy').export() : false
                 }
-            });
+            }));
         } else {
             const board_index = 0;
-            user_data.game_boards = [{
+            user_data.game_boards = [copy({
                 'name': new_board_settings.name === 'Name here...' ? getRandomInt() : new_board_settings.name,
                 'settings': new_board_settings,
                 'file-path': 'main/',
@@ -1481,7 +2082,7 @@ function createBoardListners() {
                     '2-double-jeopardy-board': settings['double-jeopardy'] ? new Board(settings, true, board_index, 'double-jeopardy').export() : false,
                     '3-final-jeopardy-board': settings['final-jeopardy'] ? new Board(settings, true, board_index, 'final-jeopardy').export() : false
                 }
-            }];
+            })];
         }
         update(ref(db, `users/${userId}`), {
             "game_boards": user_data.game_boards
@@ -1516,6 +2117,7 @@ function updateCreateBoard() {
 }
 
 function createBoardHTML(game_board) {
+    document.getElementById('game-container').innerHTML = '';
     document.getElementById('boards-container').innerHTML = '';
     hideScreens('boards-container');
     let normal_board = game_board.boards['1-normal-jeopardy-board'] != false ? new Board(game_board.boards['1-normal-jeopardy-board'], false) : false; 
@@ -2000,10 +2602,6 @@ function settingsListners() {
     });
 }
 
-// update(ref(db, `users/`), {
-//     "": value
-// });
-
 export function setUserData() {
     user_data = JSON.parse(localStorage.getItem('jeopardy-user-data'));
     settingsListners();
@@ -2020,6 +2618,13 @@ editBoardsListners();
 document.getElementById("create-game").addEventListener('click', function() {
     hideScreens('select-board-container');
     updateSelectBoard();
+});
+
+document.getElementById("load-game").addEventListener('click', function() {
+    if (user_data.active_games === 'empty') return;
+    hideScreens('game-container');
+    launchFullScreen();
+    loadGame(user_data.active_games[2]);
 });
 
 document.getElementById("create-board").addEventListener('click', function() {
