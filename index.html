@@ -50,7 +50,7 @@
         <div>
             <div class="option-title">
                 <p>▶</p>
-                <label for="create-game-teams">Teams</h2>
+                <label for="create-game-teams">Teams (min 2, max 6)</h2>
             </div>
             <div class="options-container">
                 <hr>
@@ -126,6 +126,11 @@
         </div>
     </div>
     <div id="game-container"></div>
+    <div id="load-game-container">
+        <div><h1>Jeopardy</h1></div>
+        <div id="active-games-container"></div>
+        <div><button id="load-game-home-button" class="wide-button">Home</button></div>
+    </div>
     <div id="create-board-container" class="user-options-input-container">
         <h1>Jeopardy</h1>
         <hr>
@@ -266,11 +271,11 @@
                     </label>
                 </div>
                 <div class="option">
-                    <label for="board-question">Key Pressed to reveal answer:</label>
+                    <label for="board-question">Key pressed to reveal answer/question (control to reset):</label>
                     <button id="board-key-reveal-answer-input">NA</button>
                 </div>
                 <div class="option">
-                    <label for="board-question">Key Pressed to go home:</label>
+                    <label for="board-question">Key pressed to go home (control to reset):</label>
                     <button id="board-key-go-home-input">NA</button>
                 </div>
             </div>
@@ -457,11 +462,11 @@
                     </label>
                 </div>
                 <div class="option">
-                    <label for="settings-question">Key Pressed to reveal answer:</label>
+                    <label for="settings-question">Key pressed to reveal answer/question (control to reset):</label>
                     <button id="settings-key-reveal-answer-input">NA</button>
                 </div>
                 <div class="option">
-                    <label for="settings-question">Key Pressed to go home:</label>
+                    <label for="settings-question">Key pressed to go home (control to reset):</label>
                     <button id="settings-key-go-home-input">NA</button>
                 </div>
             </div>
@@ -494,6 +499,7 @@
             <button id="settings-home-button" class="home-button">Home</button>
         </div>
     </div>
+    <div id="loading-screen"><div class="loader"></div></div>
     <script src="firebase-sign-in.js" type="module"></script>
     <script src="script.js" type="module"></script>
   </body>

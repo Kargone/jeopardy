@@ -9,7 +9,6 @@ import {
     update
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAbFg-ax7FMV5FiNqsAE2ZNXhKB3FMQBWE",
     authDomain: "jeopardy-a365e.firebaseapp.com",
@@ -20,7 +19,6 @@ const firebaseConfig = {
     appId: "1:834996600275:web:d8588aafc0d2b0fecac326"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -241,7 +239,6 @@ class Board {
                     <button id="${this.type}-next-board">Next Board</button>
                 </div>
             `;
-            // table
             let table = '<table>';
             let table_headings = '<tr>';
             for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
@@ -374,6 +371,10 @@ class Board {
                     </div>
                 </div>
             `;
+            if (!this.imagesAllowed) {
+                document.getElementById(`final-jeopardy-image-input`).style.display = 'none';
+                document.getElementById(`final-jeopardy-image-preview`).style.display = 'none';
+            }
             board_container.style.display = 'none';
             board_container.className = 'final-jeopardy-container';
             document.getElementById('boards-container').appendChild(board_container);
@@ -630,7 +631,6 @@ class Board {
                     <button id="${this.type}-next-board">Next Board</button>
                 </div>
             `;
-            // table
             let table = '<table>';
             let table_headings = '<tr>';
             for (let topic_number = 1; topic_number <= this.topicAmount; topic_number++) {
@@ -760,14 +760,16 @@ class Board {
             for (let i = 0; i < 3; i++) {
                 index = (index + 1) % 3;
                 const boards = user_data.active_games[this_board.boardIndex].boards;
-                if ((boards[Object.keys(boards)[index]] != false) && (user_data.active_games[this_board.boardIndex]['game-settings'][Object.keys(boards)[index]] != false)) {
+                if ((boards[Object.keys(boards)[index]] != false) && (user_data.active_games[this_board.boardIndex]['game-settings'][boards[Object.keys(boards)[index]].type] != false)) {
                     const board_type = boards[Object.keys(boards)[index]].type;
                     document.getElementById(`${board_type}-board-container`).style.display = 'block';
                     for (const board_type of ['normal-jeopardy', 'double-jeopardy']) {
                         for (const team_name_index in this_board.teamNames) {
+                            if (document.getElementById(`${board_type}-team-${team_name_index}-selector`) === null) continue;
                             document.getElementById(`${board_type}-team-${team_name_index}-selector`).style.color = 'yellow';
                         }
                         const selected_team = user_data.active_games[this_board.boardIndex]['game-settings']['selected-team'];
+                        if (document.getElementById(`${board_type}-team-${selected_team}-selector`) === null) continue;
                         document.getElementById(`${board_type}-team-${selected_team}-selector`).style.color = 'red';
                     }
                     break;
@@ -780,6 +782,7 @@ class Board {
                 document.getElementById(`${this.type}-team-${this.teamNames.indexOf(team_name)}-selector`).addEventListener('click', function() {
                     user_data.active_games[this_board.boardIndex]['game-settings']['selected-team'] = this_board.teamNames.indexOf(team_name);
                     for (const team_name_index in this_board.teamNames) {
+                        if (document.getElementById(`${this_board.type}-team-${team_name_index}-selector`) === null) continue;
                         document.getElementById(`${this_board.type}-team-${team_name_index}-selector`).style.color = 'yellow';
                     }
                     this.style.color = 'red';
@@ -1172,6 +1175,10 @@ class Question {
             updateQuestionEdit();
         });
         for (const question_type of ['normal', 'daily-double']) {
+            if (!this.imagesAllowed) {
+                document.getElementById(`${this.boardType}-${question_type}-image-${this.questionNumber}-input`).style.display = 'none';
+                document.getElementById(`${this.boardType}-${question_type}-image-${this.questionNumber}-preview`).style.display = 'none';
+            }
             for (const team_name of ['team-1', 'team-2', 'team-3']) {
                 document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-${team_name}-add-button`).addEventListener('click', function() {
                     document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent = parseInt(document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-${team_name}-points`).textContent) + this_question.wager;
@@ -1184,6 +1191,7 @@ class Question {
                 document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
                 document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
                 document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
+                document.removeEventListener("keydown", keyPress);
             });
             document.getElementById(`${this.boardType}-${question_type}-timer-delay-${this.questionNumber}-input`).addEventListener('change', function() {
                 this_question.timerDelay = parseInt(this.value);
@@ -1218,6 +1226,7 @@ class Question {
                 updatePreview();
                 document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-edit-container`).style.display = 'none';
                 document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
+                document.addEventListener("keydown", keyPress, {'once': true});
             });
             document.getElementById(`${this.boardType}-${question_type}-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
                 if (this_question.timerGoing) {
@@ -1332,6 +1341,24 @@ class Question {
             updateTimer();
             document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-start-stop-button`).textContent = 'Start';
         });
+        function keyPress(e) {
+            //frist see if this should be still active
+            if (document.getElementById(`${this_question.boardType}-board-question-${this_question.questionNumber}`) === null) return;
+            //then find out which you key you are supposed to be looking for
+            let pressedKey = String(e.key);
+            if (this_question.dailyDouble) {
+                if ((this_question.revealedAnswer === false) && (pressedKey === this_question.keyRevealAnswer))
+                    document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).click();
+                else if ((this_question.revealedAnswer === true) && (pressedKey === this_question.keyGoHome))  
+                    document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).click();
+            } else {
+                if ((this_question.revealedAnswer === false) && (pressedKey === this_question.keyRevealAnswer))
+                    document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).click();
+                else if ((this_question.revealedAnswer === true) && (pressedKey === this_question.keyGoHome))  
+                    document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).click();
+            }
+            document.addEventListener("keydown", keyPress, {'once': true});
+        }
         function updateQuestionEdit() {
             document.getElementById(`${this_question.boardType}-normal-timer-${this_question.questionNumber}-input`).value = this_question.timerLengthNormal;
             document.getElementById(`${this_question.boardType}-daily-double-timer-${this_question.questionNumber}-input`).value = this_question.timerLengthDailyDouble;
@@ -1541,6 +1568,7 @@ class Question {
             update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {
                 "faded": true
             });
+            document.addEventListener("keydown", keyPress, {'once': true});
             updateQuestionEdit();
         });
         if (this.dailyDouble) {
@@ -1549,6 +1577,7 @@ class Question {
                 document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
                 document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
                 document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                document.removeEventListener("keydown", keyPress);
                 this_question.updateSelectedTeam();
             });
             document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
@@ -1604,6 +1633,7 @@ class Question {
                     document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
                     document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
                     document.getElementById(`${this_question.boardType}-daily-double-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                    document.removeEventListener("keydown", keyPress);
                 }
             });
             document.getElementById(`${this.boardType}-daily-double-question-${this.questionNumber}-reset-button`).addEventListener('click', function() {
@@ -1635,6 +1665,7 @@ class Question {
                 document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
                 document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
                 document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                document.removeEventListener("keydown", keyPress);
                 this_question.updateSelectedTeam();
             });
             document.getElementById(`${this.boardType}-normal-question-${this.questionNumber}-start-stop-button`).addEventListener('click', function() {
@@ -1667,6 +1698,7 @@ class Question {
                     document.getElementById(`${this_question.boardType}-board-container`).style.display = 'block';
                     document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'none';
                     document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'none';
+                    document.removeEventListener("keydown", keyPress);
                     this_question.updateSelectedTeam();
                 }
                 document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-answer-text`).className = 'unfade';
@@ -1699,6 +1731,24 @@ class Question {
                     });
                 });
             }
+        }
+        function keyPress(e) {
+            //frist see if this should be still active
+            if (document.getElementById(`${this_question.boardType}-board-question-${this_question.questionNumber}`) === null) return;
+            //then find out which you key you are supposed to be looking for
+            let pressedKey = String(e.key);
+            if (this_question.dailyDouble) {
+                if ((this_question.revealedAnswer === false) && (pressedKey === this_question.keyRevealAnswer))
+                    document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).click();
+                else if ((this_question.revealedAnswer === true) && (pressedKey === this_question.keyGoHome))  
+                    document.getElementById(`${this_question.boardType}-next-daily-double-${this_question.questionNumber}-button`).click();
+            } else {
+                if ((this_question.revealedAnswer === false) && (pressedKey === this_question.keyRevealAnswer))
+                    document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).click();
+                else if ((this_question.revealedAnswer === true) && (pressedKey === this_question.keyGoHome))  
+                    document.getElementById(`${this_question.boardType}-next-normal-${this_question.questionNumber}-button`).click();
+            }
+            document.addEventListener("keydown", keyPress, {'once': true});
         }
         function updateQuestionEdit() {
             clearInterval(this_question.timerInterval);
@@ -1755,9 +1805,9 @@ class Question {
             "selected-team": user_data.active_games[this.boardIndex]['game-settings']['selected-team']
         });
         for (const team_name_index in this.teamNames) {
-            document.getElementById(`team-${team_name_index}-selector`).style.color = 'yellow';
+            document.getElementById(`${this.boardType}-team-${team_name_index}-selector`).style.color = 'yellow';
         }
-        document.getElementById(`team-${user_data.active_games[this.boardIndex]['game-settings']['selected-team']}-selector`).style.color = 'red';
+        document.getElementById(`${this.boardType}-team-${user_data.active_games[this.boardIndex]['game-settings']['selected-team']}-selector`).style.color = 'red';
     }
     export() {
         return {
@@ -1794,7 +1844,8 @@ function hideScreens(expect) {
         'settings-container',
         'create-game-container',
         'select-board-container',
-        'game-container'
+        'game-container',
+        'load-game-container'
     ]) {
         if (screen_type === expect) 
             document.getElementById(screen_type).style.display = 
@@ -1820,7 +1871,7 @@ function createGameListners() {
         hideScreens('home-container');
     });
     document.getElementById("create-game-button").addEventListener('click', function() {
-        if (Object.keys(new_game['game-settings'].teams).length < 2) return;
+        if ((Object.keys(new_game['game-settings'].teams).length < 2) || (Object.keys(new_game['game-settings'].teams).length > 6)) return;
         if (typeof user_data.active_games === 'object') {
             const game_index = user_data.active_games.length;
             new_game['game-settings'].gameIndex = game_index;
@@ -1858,7 +1909,6 @@ function createGameListners() {
         });
         document.getElementById(`create-game-team-${new_team.teamNumber}-score-input`).addEventListener('click', function() {
             new_game['game-settings'].teams[new_team.teamNumber].score = parseInt(this.value);
-            console.log(new_game);
         });
         document.getElementById(`create-game-team-${new_team.teamNumber}-name-input`).focus();
     });
@@ -1994,21 +2044,85 @@ function updateCreateGame() {
     }
 }
 
+function loadGameListners() {
+    document.getElementById('load-game-home-button').addEventListener('click', function() {
+        hideScreens('home-container');
+    });
+}
+
+function updateLoadGame() {
+    document.getElementById('active-games-container').innerHTML = '';
+    for (const game of user_data.active_games) {
+        createGameSelector(game);
+    }
+}
+
+function createGameSelector(game) {
+    const game_index = game['game-settings'].gameIndex;
+    let new_game_selector = document.createElement('div');
+    new_game_selector.id = `game-selector-${game_index}`;
+    new_game_selector.gameIndex = game_index;
+    new_game_selector.className = 'board-displays';
+    new_game_selector.editingName = false;
+    new_game_selector.innerHTML = `
+        <img class="board-image" src="./board.png"/>
+        <button class="wide-button" id="game-display-${game_index}-button">${game['game-settings'].name}</button>
+        <button class="delete-button" id="game-display-${game_index}-delete-button">Delete</button>
+        <button class="change-name-button" id="game-display-${game_index}-change-name-button">Change Name</button>
+    `;
+    document.getElementById('active-games-container').appendChild(new_game_selector);
+    document.getElementById(`game-display-${game_index}-button`).addEventListener('click', function() {
+        if (new_game_selector.editingName) return;
+        launchFullScreen();
+        loadGame(game);
+    });
+    document.getElementById(`game-display-${game_index}-delete-button`).clicked = false;
+    document.getElementById(`game-display-${game_index}-delete-button`).addEventListener('click', function() {
+        if (this.clicked) {
+            user_data.active_games.splice(game_index, 1);
+            for (const active_game_index in user_data.active_games) user_data.active_games[active_game_index]['game-settings'].gameIndex = parseInt(active_game_index);
+            update(ref(db, `users/${userId}`), {
+                "active_games": user_data.active_games
+            });
+            updateLoadGame();
+        }
+        this.clicked = true;
+        setTimeout(() => {
+            document.getElementById(`game-display-${game_index}-delete-button`).clicked = false;
+        }, 500);
+    });
+    document.getElementById(`game-display-${game_index}-change-name-button`).addEventListener('click', function() {
+        document.getElementById(`game-display-${game_index}-button`).innerHTML = `
+            <input id="game-display-${game_index}-input" class="board-display-input" type="text" value="${user_data.active_games[game_index]['game-settings'].name}"/>
+        `;
+        new_game_selector.editingName = true;
+        document.getElementById(`game-display-${game_index}-input`).focus();
+        document.getElementById(`game-display-${game_index}-input`).addEventListener('change', function() {
+            user_data.active_games[game_index]['game-settings'].name = this.value;
+            update(ref(db, `users/${userId}/active_games/${game_index}/game-settings`), {
+                "name": this.value
+            });
+            new_game_selector.editingName = false;
+            updateLoadGame();
+        });
+    });
+}
+
 function loadGame(game_info) {
     document.getElementById('game-container').innerHTML = '';
     document.getElementById('boards-container').innerHTML = '';
     hideScreens('game-container');
     let normal_board = 
         game_info.boards['1-normal-jeopardy-board'] != false && 
-        game_info['game-settings']['1-normal-jeopardy-board'] != false ? 
+        game_info['game-settings']['normal-jeopardy'] != false ? 
         new Board(game_info.boards['1-normal-jeopardy-board'], false) : false; 
     let double_board = 
         game_info.boards['2-double-jeopardy-board'] != false && 
-        game_info['game-settings']['2-double-jeopardy-board'] != false ? 
+        game_info['game-settings']['double-jeopardy'] != false ? 
         new Board(game_info.boards['2-double-jeopardy-board'], false) : false;
     let final_board = 
         game_info.boards['3-final-jeopardy-board'] != false && 
-        game_info['game-settings']['3-final-jeopardy-board'] != false ? 
+        game_info['game-settings']['final-jeopardy'] != false ? 
         new Board(game_info.boards['3-final-jeopardy-board'], false) : false;
     if (typeof normal_board != 'boolean') normal_board.loadForGame(game_info['game-settings']);
     if (typeof double_board != 'boolean') double_board.loadForGame(game_info['game-settings']);
@@ -2031,8 +2145,9 @@ function createBoardListners() {
             document.getElementById(`board-${board_settting_type}-input`).addEventListener('click', function() {
                 document.addEventListener("keydown", (e) => {
                     let pressedKey = String(e.key);
-                    new_board_settings[board_settting_type] = pressedKey;
-                    document.getElementById(`board-${board_settting_type}-input`).textContent = pressedKey;    
+                    if (pressedKey === 'Control') pressedKey = '';
+                    new_board_settings[board_settting_type] = copy(pressedKey);
+                    document.getElementById(`board-${board_settting_type}-input`).textContent = pressedKey === '' ? 'NA' :  pressedKey;
                 }, {'once': true});
             });
         } else if (typeof board_setting_type_value === 'boolean') {
@@ -2211,13 +2326,20 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
         });
         updateEditBoards();
     });
+    document.getElementById(`board-display-${boardIndex}-delete-button`).clicked = false;
     document.getElementById(`board-display-${boardIndex}-delete-button`).addEventListener('click', function() {
-        user_data.game_boards.splice(boardIndex, 1);
-        updateGameBoardIndexs();
-        update(ref(db, `users/${userId}`), {
-            "game_boards": user_data.game_boards
-        });
-        updateEditBoards();
+        if (this.clicked) {
+            user_data.game_boards.splice(boardIndex, 1);
+            updateGameBoardIndexs();
+            update(ref(db, `users/${userId}`), {
+                "game_boards": user_data.game_boards
+            });
+            updateEditBoards();
+        }
+        this.clicked = true;
+        setTimeout(() => {
+            document.getElementById(`board-display-${boardIndex}-delete-button`).clicked = false;
+        }, 500);
     });
     document.getElementById(`board-display-${boardIndex}-change-name-button`).addEventListener('click', function() {
         document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
@@ -2227,8 +2349,8 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
         document.getElementById(`board-display-${boardIndex}-input`).focus();
         document.getElementById(`board-display-${boardIndex}-input`).addEventListener('change', function() {
             user_data.game_boards[boardIndex].name = this.value;
-            update(ref(db, `users/${userId}`), {
-                "game_boards": user_data.game_boards
+            update(ref(db, `users/${userId}/game_boards/${boardIndex}`), {
+                "name": this.value
             });
             new_board_display.editingName = false;
             updateEditBoards();
@@ -2238,10 +2360,8 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
 
 function dragBoardDisplay(elmnt) {
     if (document.getElementById(elmnt.id + "-button")) {
-        // if present, the header is where you move the DIV from:
         document.getElementById(elmnt.id + "-button").onmousedown = dragMouseDown;
     } else {
-        // otherwise, move the DIV from anywhere inside the DIV:
         elmnt.onmousedown = dragMouseDown;
     }
     function dragMouseDown(e) {
@@ -2253,18 +2373,15 @@ function dragBoardDisplay(elmnt) {
         elmnt.style.left = (e.clientX - 140) + "px";
         elmnt.style.top = (e.clientY - 25) + "px";
         document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
     }
     function elementDrag(e) {
         e = e || window.event;
         e.preventDefault();
-        // set the element's new position:
         elmnt.style.left = (e.clientX - 140) + "px";
         elmnt.style.top = (e.clientY - 25) + "px";
     }
     function closeDragElement() {
-        // stop moving when mouse button is released:
         elmnt.style.position = 'relative';
         elmnt.style.zIndex = '1';
         elmnt.style.top = '0px';
@@ -2354,30 +2471,37 @@ function createFolder(path, name) {
             }, 1000);
         }
     });
+    document.getElementById(`folder-${name}-delete`).clicked = false;
     document.getElementById(`folder-${name}-delete`).addEventListener('click', function() {
-        for (const board_display_object_index of created_folders[name]) {
-            const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
-            board_display_object.folders.splice(board_display_object.folders.indexOf(name), 1);
-            board_display_object.filePath = board_display_object.folders.join("/") + "/";
-            user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
-            update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
-                "file-path": board_display_object.filePath
-            });
-        }
-        for (const folder_path_key in user_data.folders) {
-            const folder_path = user_data.folders[folder_path_key];
-            if (folder_path.includes(name)) {
-                let path = folder_path.split('/');
-                path.pop();
-                path.splice(path.indexOf(name), 1);
-                user_data.folders[folder_path_key] = path.join("/") + "/";
+        if (this.clicked) {
+            for (const board_display_object_index of created_folders[name]) {
+                const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
+                board_display_object.folders.splice(board_display_object.folders.indexOf(name), 1);
+                board_display_object.filePath = board_display_object.folders.join("/") + "/";
+                user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
+                update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
+                    "file-path": board_display_object.filePath
+                });
             }
+            for (const folder_path_key in user_data.folders) {
+                const folder_path = user_data.folders[folder_path_key];
+                if (folder_path.includes(name)) {
+                    let path = folder_path.split('/');
+                    path.pop();
+                    path.splice(path.indexOf(name), 1);
+                    user_data.folders[folder_path_key] = path.join("/") + "/";
+                }
+            }
+            user_data.folders = [...new Set(user_data.folders)];
+            update(ref(db, `users/${userId}/`), {
+                "folders": user_data.folders
+            });
+            updateEditBoards();
         }
-        user_data.folders = [...new Set(user_data.folders)];
-        update(ref(db, `users/${userId}/`), {
-            "folders": user_data.folders
-        });
-        updateEditBoards();
+        this.clicked = true;
+        setTimeout(() => {
+            document.getElementById(`folder-${name}-delete`).clicked = false;
+        }, 500);
     });
     document.getElementById(`folder-${name}-change-name`).addEventListener('click', function() {
         new_folder_icon.editingName = true;
@@ -2426,10 +2550,8 @@ function createFolder(path, name) {
 
 function dragFolder(elmnt) {
     if (document.getElementById(elmnt.id + "-button")) {
-        // if present, the header is where you move the DIV from:
         document.getElementById(elmnt.id + "-button").onmousedown = dragMouseDown;
     } else {
-        // otherwise, move the DIV from anywhere inside the DIV:
         elmnt.onmousedown = dragMouseDown;
     }
     function dragMouseDown(e) {
@@ -2437,20 +2559,17 @@ function dragFolder(elmnt) {
         e = e || window.event;
         e.preventDefault();
         document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
     }
     function elementDrag(e) {
         e = e || window.event;
         e.preventDefault();
-        // set the element's new position:
         elmnt.style.position = 'absolute';
         elmnt.style.zIndex = '2';
         elmnt.style.left = (e.clientX - 140) + "px";
         elmnt.style.top = (e.clientY - 25) + "px";
     }
     function closeDragElement() {
-        // stop moving when mouse button is released:
         elmnt.style.position = 'relative';
         elmnt.style.zIndex = '3';
         elmnt.style.top = '0px';
@@ -2556,8 +2675,9 @@ function settingsListners() {
             document.getElementById(`settings-${settting_type}-input`).addEventListener('click', function() {
                 document.addEventListener("keydown", (e) => {
                     let pressedKey = String(e.key);
-                    user_data.default_board[settting_type] = pressedKey;
-                    document.getElementById(`settings-${settting_type}-input`).textContent = pressedKey;    
+                    if (pressedKey === 'Control') pressedKey = '';
+                    user_data.default_board[settting_type] = copy(pressedKey);
+                    document.getElementById(`settings-${settting_type}-input`).textContent = pressedKey === '' ? 'NA' :  pressedKey;    
                     update(ref(db, `users/${userId}`), {
                         "default_board": user_data.default_board
                     });
@@ -2605,6 +2725,7 @@ function settingsListners() {
 export function setUserData() {
     user_data = JSON.parse(localStorage.getItem('jeopardy-user-data'));
     settingsListners();
+    document.getElementById('loading-screen').style.display = 'none';
 }
 
 export function setUserId() {
@@ -2612,6 +2733,7 @@ export function setUserId() {
 }
 
 createGameListners();
+loadGameListners();
 createBoardListners();
 editBoardsListners();
 
@@ -2622,9 +2744,8 @@ document.getElementById("create-game").addEventListener('click', function() {
 
 document.getElementById("load-game").addEventListener('click', function() {
     if (user_data.active_games === 'empty') return;
-    hideScreens('game-container');
-    launchFullScreen();
-    loadGame(user_data.active_games[2]);
+    hideScreens('load-game-container');
+    updateLoadGame();
 });
 
 document.getElementById("create-board").addEventListener('click', function() {

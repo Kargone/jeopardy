@@ -39,6 +39,7 @@ if (localStorage.getItem('jeopardy-user-data') === null) {
     document.getElementById("sign-in-container").style.display = 'inline-grid';
     document.getElementById("home-container").style.display = 'none';
     document.getElementById("sign-in").addEventListener('click', async function () {
+        document.getElementById('loading-screen').style.display = 'block';
         if (localStorage.getItem('jeopardy-user-data') != null) {
             document.getElementById("sign-in-container").style.display = 'none';
             document.getElementById("home-container").style.display = 'inline-grid';
@@ -62,6 +63,7 @@ if (localStorage.getItem('jeopardy-user-data') === null) {
         connectToDatabase(userCred.user.uid);
     });
 } else {
+    document.getElementById('loading-screen').style.display = 'block';
     const googleUserCred = JSON.parse(localStorage.getItem('jeopardy-user-cred'));
     await signInWithEmailAndPassword(auth, googleUserCred.email, googleUserCred.uid)
     .then((userCredential) => {
