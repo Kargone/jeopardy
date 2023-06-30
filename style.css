@@ -864,7 +864,6 @@ table {
 }
 
 th {
-    font-size: var(--table-heading-font-size);
     color: var(--topic-color);
     padding: 10px;
 }
