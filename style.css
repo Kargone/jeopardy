@@ -103,7 +103,7 @@
     height: 25px;
     position: absolute;
     top: 15px;
-    left: 697px;
+    left: calc(50% - 100px);
 }
 
 .folder:not(:active) > .folder-icon:hover > button:not(.wide-button) {
@@ -134,19 +134,19 @@
 }
 
 .edit-button {
-    right: 553px;
+    right: calc(50vw - 247px);
 }
 
 .copy-button {
-    left: 592px;
+    left: calc(50% - 208px);
 }
 
 .delete-button {
-    left: 637px;
+    left: calc(50% - 163px);
 }
 
 .change-name-button {
-    right: 590px;
+    right: calc(50% - 210px);
 }
 
 .folder > button,

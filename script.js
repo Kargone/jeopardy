@@ -2145,7 +2145,7 @@ function createBoardListners() {
             document.getElementById(`board-${board_settting_type}-input`).addEventListener('click', function() {
                 document.addEventListener("keydown", (e) => {
                     let pressedKey = String(e.key);
-                    if (pressedKey === 'Control') pressedKey = '';
+                    if (pressedKey === 'Control') pressedKey = 'NA';
                     new_board_settings[board_settting_type] = copy(pressedKey);
                     document.getElementById(`board-${board_settting_type}-input`).textContent = pressedKey === '' ? 'NA' :  pressedKey;
                 }, {'once': true});
@@ -2675,7 +2675,7 @@ function settingsListners() {
             document.getElementById(`settings-${settting_type}-input`).addEventListener('click', function() {
                 document.addEventListener("keydown", (e) => {
                     let pressedKey = String(e.key);
-                    if (pressedKey === 'Control') pressedKey = '';
+                    if (pressedKey === 'Control') pressedKey = 'NA';
                     user_data.default_board[settting_type] = copy(pressedKey);
                     document.getElementById(`settings-${settting_type}-input`).textContent = pressedKey === '' ? 'NA' :  pressedKey;    
                     update(ref(db, `users/${userId}`), {
