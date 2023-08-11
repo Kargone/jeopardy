@@ -2730,6 +2730,8 @@ export function setUserData() {
 
 export function setUserId() {
     userId = JSON.parse(localStorage.getItem('jeopardy-user-id'));
+    settingsListners();
+    document.getElementById('loading-screen').style.display = 'none';
 }
 
 createGameListners();
