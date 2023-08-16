@@ -418,16 +418,23 @@ input:checked + .slider:before {
 .home-button-container-board {
     position: absolute;
     top: 58px;
-    left: calc(1vw + 270px);
+    left: calc(1vw + 227px);
+}
+
+.final-jeopardy-game-home-button-container-board {
+    position: absolute;
+    top: 58px;
+    left: 1vw;
 }
 
 .game-home-button-container {
     position: absolute;
-    top: 58px;
+    top: 62px;
     left: 72vw;
 }
 
 .home-button-container-board > button,
+.final-jeopardy-game-home-button-container-board > button,
 .game-home-button-container > button {
     width: 150px;
     height: 60px;
@@ -672,18 +679,23 @@ input:checked + .slider:before {
 }
 
 .question-container > .normal-question-preview-container > .next-button-container,
-.question-container > .daily-double-question-preview-container > .next-button-container,
-.final-jeopardy-container > .final-jeopardy-preview-container > .next-button-container {
+.question-container > .daily-double-question-preview-container > .next-button-container {
     position: absolute;
     bottom: 1vw;
     right: 1vw;
+}
+
+.final-jeopardy-container > .final-jeopardy-preview-container > .next-button-container {
+    position: absolute;
+    top: 121px;
+    left: 1vw;
 }
 
 .question-container > .normal-question-preview-container > .game-next-button-container,
 .question-container > .daily-double-question-preview-container > .game-next-button-container,
 .final-jeopardy-container > .final-jeopardy-preview-container > .game-next-button-container {
     position: absolute;
-    bottom: 13vw;
+    bottom: 220px;
     left: 1vw;
 }
 

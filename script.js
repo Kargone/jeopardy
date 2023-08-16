@@ -691,7 +691,7 @@ class Board {
                     <div class="next-button-container">
                         <button id="final-jeopardy-next-button">Reveal Question</button>
                     </div>
-                    <div class="home-button-container-board">
+                    <div class="final-jeopardy-game-home-button-container-board">
                         <button id="final-jeopardy-home-button">Home</button>
                     </div>
                     <div class="next-board">
@@ -1871,7 +1871,7 @@ function createGameListners() {
         hideScreens('home-container');
     });
     document.getElementById("create-game-button").addEventListener('click', function() {
-        if ((Object.keys(new_game['game-settings'].teams).length < 2) || (Object.keys(new_game['game-settings'].teams).length > 6)) return;
+        if ((Object.keys(new_game['game-settings'].teams).length < 2) || (Object.keys(new_game['game-settings'].teams).length > 5)) return;
         if (typeof user_data.active_games === 'object') {
             const game_index = user_data.active_games.length;
             new_game['game-settings'].gameIndex = game_index;
