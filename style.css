@@ -627,13 +627,13 @@ input:checked + .slider:before {
 }
 
 .question-container > .normal-question-preview-container > .preview-question-container > h2 {
-    font-size: 70px;
+    font-size: 50px;
     color: var(--question-color);
 }
 
 .question-container > .daily-double-question-preview-container > .preview-question-container > h2,
 .final-jeopardy-container > .final-jeopardy-preview-container > .preview-question-container > h2 {
-    font-size: 70px;
+    font-size: 50px;
     opacity: 0;
     color: var(--question-color);
 }
@@ -641,7 +641,7 @@ input:checked + .slider:before {
 .question-container > .normal-question-preview-container > .preview-answer-container > h2,
 .question-container > .daily-double-question-preview-container > .preview-answer-container > h2,
 .final-jeopardy-container > .final-jeopardy-preview-container > .preview-answer-container > h2 {
-    font-size: 70px;
+    font-size: 50px;
     opacity: 0;
     color: var(--answer-color);
 }
