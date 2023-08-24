@@ -957,11 +957,11 @@ class Question {
                     </div>
                     <div class="question-input-container">
                         <label>Q:</label>
-                        <input id="${this.boardType}-normal-question-${this.questionNumber}-input" type="text" value="${this.question}"/>
+                        <input id="${this.boardType}-normal-question-${this.questionNumber}-input" type="text" placeholder="Enter question here" value="${this.question != 'Enter question here' ? this.question : ''}"/>
                     </div>
                     <div class="answer-input-container">
                         <label>A:</label>
-                        <input id="${this.boardType}-normal-answer-${this.questionNumber}-input" type="text" value="${this.answer}"/>
+                        <input id="${this.boardType}-normal-answer-${this.questionNumber}-input" type="text" placeholder="Enter answer here" value="${this.answer != 'Enter answer here' ? this.answer : ''}"/>
                     </div>
                     <div class="image-input-container">
                         <div>
@@ -999,11 +999,11 @@ class Question {
                     </div>
                     <div class="question-input-container">
                         <label>Q:</label>
-                        <input id="${this.boardType}-daily-double-question-${this.questionNumber}-input" type="text" value="${this.question}"/>
+                        <input id="${this.boardType}-daily-double-question-${this.questionNumber}-input" type="text" placeholder="Enter question here" value="${this.question != 'Enter question here' ? this.question : ''}"/>
                     </div>
                     <div class="answer-input-container">
                         <label>A:</label>
-                        <input id="${this.boardType}-daily-double-answer-${this.questionNumber}-input" type="text" value="${this.answer}"/>
+                        <input id="${this.boardType}-daily-double-answer-${this.questionNumber}-input" type="text" placeholder="Enter answer here" value="${this.answer != 'Enter answer here' ? this.answer : ''}"/>
                     </div>
                     <div class="image-input-container">
                         <div>
@@ -1365,8 +1365,8 @@ class Question {
             for (const question_type of ['normal', 'daily-double']) {
                 document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-title`).textContent = this_question.title;
                 document.getElementById(`${this_question.boardType}-${question_type}-timer-delay-${this_question.questionNumber}-input`).value = this_question.timerDelay;
-                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-input`).value = this_question.question;
-                document.getElementById(`${this_question.boardType}-${question_type}-answer-${this_question.questionNumber}-input`).value = this_question.answer;
+                document.getElementById(`${this_question.boardType}-${question_type}-question-${this_question.questionNumber}-input`).value = this_question.question != 'Enter question here' ? this_question.question : '';
+                document.getElementById(`${this_question.boardType}-${question_type}-answer-${this_question.questionNumber}-input`).value = this_question.answer != 'Enter answer here' ? this_question.answer : '';
                 document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-input`).value = this_question.imageURL;
                 document.getElementById(`${this_question.boardType}-${question_type}-image-${this_question.questionNumber}-preview`).src = this_question.imageURL;
             }
