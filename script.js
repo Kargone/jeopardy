@@ -1424,7 +1424,7 @@ class Question {
     loadForGame(team_names, gameIndex) {
         this.teamNames = team_names;
         this.boardIndex = gameIndex;
-        if (this.faded) document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).className = 'already-faded';
+        if (this.faded) document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).className = 'opened-question';
         if (this.dailyDouble) {
             return `
                 <div id="${this.boardType}-question-${this.questionNumber}-container" class="question-container">
@@ -1550,10 +1550,10 @@ class Question {
         const this_question = this;
         let question_data_ref = user_data.active_games[this.boardIndex].boards[`${boardName_boardNumber[this.boardType]}-${this.boardType}-board`]['question-infos'][`question-${this.questionNumber}`];
         document.getElementById(`${this.boardType}-board-question-${this.questionNumber}`).addEventListener('click', function() {
-            for (const object of document.getElementsByClassName('fade')) {
-                if (!object.id.includes('board-question')) continue;
-                object.className = 'already-faded';
-            }
+            // for (const object of document.getElementsByClassName('fade')) {
+            //     if (!object.id.includes('board-question')) continue;
+            //     object.className = 'already-faded';
+            // }
             if (this_question.faded && !(user_data.active_games[this_question.boardIndex]['game-settings']['old-questions-clicked'])) return;
             document.getElementById(`${this_question.boardType}-board-container`).style.display = 'none';
             document.getElementById(`${this_question.boardType}-question-${this_question.questionNumber}-container`).style.display = 'block';
@@ -1562,7 +1562,7 @@ class Question {
             } else {
                 document.getElementById(`${this_question.boardType}-normal-question-${this_question.questionNumber}-preview-container`).style.display = 'block';
             }
-            this.className = 'fade';
+            this.className = 'opened-question';
             this_question.faded = true;
             question_data_ref.faded = true;
             update(ref(db, `users/${userId}/active_games/${this_question.boardIndex}/boards/${boardName_boardNumber[this_question.boardType]}-${this_question.boardType}-board/question-infos/question-${this_question.questionNumber}`), {

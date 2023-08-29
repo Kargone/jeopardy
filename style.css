@@ -837,6 +837,10 @@ input:checked + .slider:before {
     animation: forwards fade 1s;
 }
 
+.opened-question {
+    color: red;
+}
+
 @keyframes fade {
     from {
         opacity: 1;
