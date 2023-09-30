@@ -2342,12 +2342,26 @@ function createBoardDisplay(name, boardIndex, dateCreated, filePath) {
         }, 500);
     });
     document.getElementById(`board-display-${boardIndex}-change-name-button`).addEventListener('click', function() {
-        document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
-            <input id="board-display-${boardIndex}-input" class="board-display-input" type="text" value="${user_data.game_boards[boardIndex].name}"/>
-        `;
+        if (isNumericString(new_board_display.name)) {
+            document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
+                <input id="board-display-${boardIndex}-input" class="board-display-input" type="text" placeholder="${user_data.game_boards[boardIndex].name}"/>
+            `;
+        } else {
+            document.getElementById(`board-display-${boardIndex}-button`).innerHTML = `
+                <input id="board-display-${boardIndex}-input" class="board-display-input" type="text" value="${user_data.game_boards[boardIndex].name}"/>
+            `;
+        }
         new_board_display.editingName = true;
         document.getElementById(`board-display-${boardIndex}-input`).focus();
         document.getElementById(`board-display-${boardIndex}-input`).addEventListener('change', function() {
+            user_data.game_boards[boardIndex].name = this.value;
+            update(ref(db, `users/${userId}/game_boards/${boardIndex}`), {
+                "name": this.value
+            });
+            new_board_display.editingName = false;
+            updateEditBoards();
+        });
+        document.getElementById(`board-display-${boardIndex}-input`).addEventListener('focusout', function() {
             user_data.game_boards[boardIndex].name = this.value;
             update(ref(db, `users/${userId}/game_boards/${boardIndex}`), {
                 "name": this.value
@@ -2452,24 +2466,18 @@ function createFolder(path, name) {
     new_folder_icon.innerHTML = `
         <img class="folder-image" src="./folder.png"/>
         <button id="folder-${name}-icon-button" class="wide-button">${name}</button>
+        <button id="folder-${name}-open" class="open-button">Open</button>
         <button id="folder-${name}-delete" class="delete-button">Delete</button>
         <button id="folder-${name}-change-name" class="change-name-button">Change Name</button>
     `;
     document.getElementById(`folder-${path[path.length - 1]}`).appendChild(new_folder_icon);
     dragFolder(new_folder_icon);
-    document.getElementById(`folder-${name}-icon-button`).addEventListener('click', function() {
+    document.getElementById(`folder-${name}-open`).addEventListener('click', function() {
         if (new_folder_icon.editingName) return;
-        if (new_folder_icon.clicked) {
-            hideFolders(name);
-            user_path += `${name}/`;
-            document.getElementById('path-text').textContent = `Path: ${user_path}`;
-            new_folder_icon.clicked = false;
-        } else {
-            new_folder_icon.clicked = true;
-            setTimeout(() => {
-                new_folder_icon.clicked = false;
-            }, 1000);
-        }
+        hideFolders(name);
+        user_path += `${name}/`;
+        document.getElementById('path-text').textContent = `Path: ${user_path}`;
+        new_folder_icon.clicked = false;
     });
     document.getElementById(`folder-${name}-delete`).clicked = false;
     document.getElementById(`folder-${name}-delete`).addEventListener('click', function() {
@@ -2505,11 +2513,44 @@ function createFolder(path, name) {
     });
     document.getElementById(`folder-${name}-change-name`).addEventListener('click', function() {
         new_folder_icon.editingName = true;
-        document.getElementById(`folder-${name}-icon-button`).innerHTML = `
-            <input id="folder-${name}-input" class="folder-input" type="text" value="${name}"/>
-        `;
+        console.log(isNumericString(name))
+        if (isNumericString(name)) {
+            document.getElementById(`folder-${name}-icon-button`).innerHTML = `
+                <input id="folder-${name}-input" class="folder-input" type="text" placeholder="${name}"/>
+            `;
+        } else {
+            document.getElementById(`folder-${name}-icon-button`).innerHTML = `
+                <input id="folder-${name}-input" class="folder-input" type="text" value="${name}"/>
+            `;
+        }
         document.getElementById(`folder-${name}-input`).focus();
         document.getElementById(`folder-${name}-input`).addEventListener('change', function() {
+            const new_name = this.value;
+            for (const board_display_object_index of created_folders[name]) {
+                const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
+                board_display_object.folders[board_display_object.folders.indexOf(name)] = new_name;
+                board_display_object.filePath = board_display_object.folders.join("/") + "/";
+                user_data.game_boards[board_display_object_index]['file-path'] = board_display_object.filePath;
+                update(ref(db, `users/${userId}/game_boards/${board_display_object_index}`), {
+                    "file-path": board_display_object.filePath
+                });
+            }
+            for (const folder_path_key in user_data.folders) {
+                const folder_path = user_data.folders[folder_path_key];
+                if (folder_path.includes(name)) {
+                    let path = folder_path.split('/');
+                    path.pop();
+                    path[path.indexOf(name)] = new_name;
+                    user_data.folders[folder_path_key] = path.join("/") + "/";
+                }
+            }
+            user_data.folders = [...new Set(user_data.folders)];
+            update(ref(db, `users/${userId}/`), {
+                "folders": user_data.folders
+            });
+            updateEditBoards();
+        });
+        document.getElementById(`folder-${name}-input`).addEventListener('focusout', function() {
             const new_name = this.value;
             for (const board_display_object_index of created_folders[name]) {
                 const board_display_object = document.getElementById(`board-display-${board_display_object_index}`);
@@ -2720,6 +2761,10 @@ function settingsListners() {
     document.getElementById("settings-home-button").addEventListener('click', function() {
         hideScreens('home-container');
     });
+}
+
+function isNumericString(input) {  
+    return !isNaN(parseInt(input));
 }
 
 export function setUserData() {

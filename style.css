@@ -106,11 +106,16 @@
     left: calc(50% - 100px);
 }
 
-.folder:not(:active) > .folder-icon:hover > button:not(.wide-button) {
+.folder:not(:active) > .folder-icon:hover > button:not(.wide-button, .open-button) {
+    display: block;
+}
+
+.folder:not(:active) > .folder-icon:hover > .wide-button:not(:has(.folder-input)) + .open-button {
     display: block;
 }
 
 .folder:active > .folder-icon:hover > .change-name-button:active,
+.folder:active > .folder-icon:hover > .open-button:active,
 .folder:active > .folder-icon:hover > .delete-button:active {
     display: block;
 }
@@ -127,6 +132,7 @@
 .edit-button,
 .copy-button,
 .delete-button,
+.open-button,
 .change-name-button {
     display: none;
     position: absolute;
@@ -139,6 +145,10 @@
 
 .copy-button {
     left: calc(50% - 208px);
+}
+
+.open-button {
+    right: calc(50% - 110px);
 }
 
 .delete-button {
