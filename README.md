@@ -96,37 +96,6 @@ To continue a game, choose **Load a Game** from the home screen.
 | `style.css` | Styles |
 | `board.png`, `folder.png` | Icons |
 
-## Using your own Firebase project
-
-1. Create a Firebase project and add a web app to it.
-2. In **Authentication**, enable the **Google** and **Email/Password** providers.
-3. Add the domain you will host on to the authorized domains, including `localhost` for local use.
-4. Create a **Realtime Database**, with rules that limit each user to their own data:
-
-   ```json
-   {
-     "rules": {
-       "users": {
-         "$uid": {
-           ".read": "auth != null && auth.uid === $uid",
-           ".write": "auth != null && auth.uid === $uid"
-         }
-       }
-     }
-   }
-   ```
-
-5. Replace `firebaseConfig` in **both** `script.js` and `firebase-sign-in.js`.
-
-Each user's data is stored under `users/<uid>`:
-
-| Key | Contents |
-| --- | --- |
-| `game_boards` | Saved boards |
-| `active_games` | Games that have been started, with teams and scores |
-| `default_board` | Default board settings |
-| `folders` | Folder paths |
-
 ## Known issues
 
 - The **Team order viewer** option doesn't currently hide the team order.
